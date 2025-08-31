@@ -10,7 +10,7 @@ import AnimatedText from '../components/common/AnimatedText.tsx';
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { state: cartState, clearCart } = useCart();
-  const { state: paymentState, paymentMethods, selectPaymentMethod, processPayment, clearError } = usePayment();
+  const { state: paymentState, paymentMethods, selectPaymentMethod, processPayment } = usePayment();
   const { user } = useAuth();
   
   const [formData, setFormData] = useState({

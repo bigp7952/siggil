@@ -26,9 +26,9 @@ const AdminDashboard: React.FC = () => {
     isNew: false,
     isActive: true,
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  // const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  // const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string>('');
 
   useEffect(() => {

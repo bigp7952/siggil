@@ -20,7 +20,7 @@ export const useSupabaseMigration = () => {
   // Vérifier la connexion Supabase
   const checkConnection = async () => {
     try {
-      const { data, error } = await supabase.from('products').select('count').limit(1);
+      const { error } = await supabase.from('products').select('count').limit(1);
       
       if (error) {
         console.warn('Supabase non configuré ou non connecté:', error.message);
@@ -180,7 +180,7 @@ export const useSupabaseMigration = () => {
 
     try {
       let totalProgress = 0;
-      const totalSteps = 3;
+      // const totalSteps = 3;
 
       // Migrer les produits
       if (localData.products.length > 0) {

@@ -1,8 +1,8 @@
 import { supabase } from '../lib/supabase.ts';
 import { 
   Product, Order, User, AdminUser, PremiumRequest, CartItem,
-  ProductInsert, OrderInsert, UserInsert, AdminUserInsert, PremiumRequestInsert, CartItemInsert,
-  ProductUpdate, OrderUpdate, UserUpdate, AdminUserUpdate, PremiumRequestUpdate, CartItemUpdate
+  ProductInsert, OrderInsert, UserInsert, PremiumRequestInsert, CartItemInsert,
+  ProductUpdate, UserUpdate
 } from '../lib/supabase';
 
 // ===== SERVICES PRODUITS =====

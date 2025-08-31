@@ -7,7 +7,7 @@ const Hero: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Parallax effects
-  const backgroundY = useTransform(scrollY, [0, 500], [0, -100]);
+  // const backgroundY = useTransform(scrollY, [0, 500], [0, -100]);
   const logoY = useTransform(scrollY, [0, 500], [0, -50]);
   const personY = useTransform(scrollY, [0, 500], [0, -30]);
   const textY = useTransform(scrollY, [0, 500], [0, -20]);
