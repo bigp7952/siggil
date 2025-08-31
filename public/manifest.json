@@ -1,0 +1,15 @@
+{
+  "short_name": "SIGGIL",
+  "name": "SIGGIL - Streetwear Urbain Premium",
+  "icons": [
+    {
+      "src": "logo.png",
+      "type": "image/png",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#1a1a1a"
+}
