@@ -5,6 +5,7 @@ const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Variables d\'environnement Supabase manquantes. Vérifiez votre fichier .env');
+  console.warn('Utilisez des valeurs par défaut pour éviter les erreurs.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
