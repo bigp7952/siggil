@@ -191,7 +191,7 @@ const Delivery: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-white font-semibold mb-1">Livraison sécurisée</h3>
-                  <p className="text-gray-400 text-sm">Signature requise pour les commandes > 50 000 CFA</p>
+                  <p className="text-gray-400 text-sm">Signature requise pour les commandes &gt; 50 000 CFA</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">

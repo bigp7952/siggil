@@ -21,6 +21,7 @@ import { AuthProvider } from './contexts/AuthContext.tsx';
 import { AdminProvider } from './contexts/AdminContext.tsx';
 import { ProductProvider } from './contexts/ProductContext.tsx';
 import { PaymentProvider } from './contexts/PaymentContext.tsx';
+import SupabaseStatus from './components/common/SupabaseStatus.tsx';
 
 function App() {
   return (
@@ -55,6 +56,9 @@ function App() {
                   </PageTransition>
                 </div>
               </Router>
+              
+              {/* Composant de statut Supabase */}
+              <SupabaseStatus />
             </CartProvider>
           </PaymentProvider>
         </ProductProvider>
