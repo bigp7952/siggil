@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Hero from '../components/home/Hero.tsx';
+import { useProducts } from '../contexts/ProductContext.tsx';
+import ProductCard from '../components/products/ProductCard.tsx';
 
 const Home: React.FC = () => {
+  const { state, loadNewProducts } = useProducts();
+
+  useEffect(() => {
+    loadNewProducts();
+  }, [loadNewProducts]);
+
   return (
     <div className="min-h-screen bg-black">
       {/* Hero Section */}
@@ -76,38 +84,8 @@ const Home: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-            {[
-              { name: 'SIGGIL Classic T-Shirt', price: '19 500', originalPrice: '25 000', image: '/back.jpg', discount: '22%' },
-              { name: 'SIGGIL Premium Hoodie', price: '45 000', originalPrice: '60 000', image: '/back.jpg', discount: '25%' },
-              { name: 'SIGGIL Urban Jacket', price: '75 000', originalPrice: '90 000', image: '/back.jpg', discount: '17%' },
-              { name: 'SIGGIL Street Cap', price: '12 000', originalPrice: '15 000', image: '/back.jpg', discount: '20%' }
-            ].map((product, index) => (
-              <motion.div
-                key={index}
-                className="group cursor-pointer"
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Link to={`/produit/${index + 1}`}>
-                  <div className="bg-gray-800 rounded-lg overflow-hidden">
-                    <div className="relative aspect-square bg-gradient-to-br from-gray-700 to-gray-800">
-                      {product.discount && (
-                        <div className="absolute top-2 md:top-3 left-2 md:left-3 bg-red-500 text-white text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded">
-                          -{product.discount}
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    <div className="p-3 md:p-4">
-                      <h3 className="text-white font-semibold text-xs md:text-sm mb-2 line-clamp-2">{product.name}</h3>
-                      <div className="flex items-center gap-1 md:gap-2">
-                        <span className="text-red-500 font-bold text-sm md:text-lg">{product.price} CFA</span>
-                        <span className="text-gray-500 line-through text-xs md:text-sm">{product.originalPrice} CFA</span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
+            {state.newProducts.slice(0, 4).map((product, index) => (
+              <ProductCard key={product.product_id} product={product} delay={index * 0.1} />
             ))}
           </div>
           

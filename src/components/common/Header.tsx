@@ -104,6 +104,12 @@ const Header: React.FC = () => {
                         </p>
                         <p className="text-gray-400 text-xs">{user.phoneNumber}</p>
                       </div>
+                      <Link
+                        to="/mes-commandes"
+                        className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                      >
+                        Mes Commandes
+                      </Link>
                       <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
@@ -191,7 +197,7 @@ const Header: React.FC = () => {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div
-            className="md:hidden bg-gray-900 border-t border-gray-800"
+            className="md-hidden bg-gray-900 border-t border-gray-800"
           >
               <nav className="px-4 py-4 space-y-3">
                 {navItems.map((item) => (
@@ -208,6 +214,21 @@ const Header: React.FC = () => {
                     {item.label}
                   </Link>
                 ))}
+                
+                {/* Lien vers Mes Commandes pour utilisateurs connectés */}
+                {user && (
+                  <Link
+                    to="/mes-commandes"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block py-2 text-base font-medium transition-colors ${
+                      location.pathname === '/mes-commandes' 
+                        ? 'text-red-500' 
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    Mes Commandes
+                  </Link>
+                )}
               </nav>
             </div>
           )}

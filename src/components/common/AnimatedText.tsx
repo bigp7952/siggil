@@ -158,3 +158,4 @@ const AnimatedText: React.FC<AnimatedTextProps> = ({
 };
 
 export default AnimatedText;
+

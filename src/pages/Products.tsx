@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import Header from '../components/common/Header.tsx';
-import AnimatedCard from '../components/common/AnimatedCard.tsx';
 import AnimatedText from '../components/common/AnimatedText.tsx';
+import ProductCard from '../components/products/ProductCard.tsx';
 import { useProducts } from '../contexts/ProductContext.tsx';
 
 const Products: React.FC = () => {
-  const { state, setFilters, getFilteredProducts } = useProducts();
+  const { state, filterByCategory, searchProducts, clearFilters } = useProducts();
   const [searchQuery, setSearchQuery] = useState('');
 
   const categories = [
@@ -19,51 +18,23 @@ const Products: React.FC = () => {
     { id: 'Accessoires', name: 'Accessoires' }
   ];
 
-  const sizes = [
-    { id: 'all', name: 'Toutes' },
-    { id: 'xs', name: 'XS' },
-    { id: 's', name: 'S' },
-    { id: 'm', name: 'M' },
-    { id: 'l', name: 'L' },
-    { id: 'xl', name: 'XL' },
-    { id: 'xxl', name: 'XXL' }
-  ];
 
-  const colors = [
-    { id: 'all', name: 'Toutes' },
-    { id: 'noir', name: 'Noir' },
-    { id: 'blanc', name: 'Blanc' },
-    { id: 'rouge', name: 'Rouge' },
-    { id: 'bleu', name: 'Bleu' },
-    { id: 'gris', name: 'Gris' }
-  ];
 
-  const handleCategoryChange = (category: string) => {
-    setFilters({ category });
+  const handleCategoryChange = async (category: string) => {
+    await filterByCategory(category);
   };
 
-  const handleSizeChange = (size: string) => {
-    setFilters({ size });
-  };
-
-  const handleColorChange = (color: string) => {
-    setFilters({ color });
-  };
-
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     setSearchQuery(query);
-    setFilters({ searchQuery: query });
+    await searchProducts(query);
   };
 
-  const filteredProducts = getFilteredProducts();
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XOF',
-      minimumFractionDigits: 0,
-    }).format(amount);
+  const handleClearFilters = () => {
+    clearFilters();
+    setSearchQuery('');
   };
+
+
 
   return (
     <div className="min-h-screen bg-black">
@@ -125,7 +96,7 @@ const Products: React.FC = () => {
                     key={category.id}
                     onClick={() => handleCategoryChange(category.id)}
                     className={`px-2 py-1 sm:px-3 md:px-4 sm:py-1.5 md:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
-                      state.filters.category === category.id
+                      state.selectedCategory === category.id
                         ? 'bg-red-500 text-white shadow-lg shadow-red-500/25'
                         : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
                     }`}
@@ -138,48 +109,16 @@ const Products: React.FC = () => {
               </div>
             </div>
 
-            {/* Tailles */}
+            {/* Bouton Effacer les filtres */}
             <div className="mb-4 sm:mb-6">
-              <h3 className="text-white font-semibold text-xs sm:text-sm md:text-base mb-2 sm:mb-3">Tailles</h3>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2 md:gap-3">
-                {sizes.map((size) => (
-                  <motion.button
-                    key={size.id}
-                    onClick={() => handleSizeChange(size.id)}
-                    className={`px-2 py-1 sm:px-3 md:px-4 sm:py-1.5 md:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
-                      state.filters.size === size.id
-                        ? 'bg-red-500 text-white shadow-lg shadow-red-500/25'
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {size.name}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            {/* Couleurs */}
-            <div className="mb-4 sm:mb-6">
-              <h3 className="text-white font-semibold text-xs sm:text-sm md:text-base mb-2 sm:mb-3">Couleurs</h3>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2 md:gap-3">
-                {colors.map((color) => (
-                  <motion.button
-                    key={color.id}
-                    onClick={() => handleColorChange(color.id)}
-                    className={`px-2 py-1 sm:px-3 md:px-4 sm:py-1.5 md:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
-                      state.filters.color === color.id
-                        ? 'bg-red-500 text-white shadow-lg shadow-red-500/25'
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {color.name}
-                  </motion.button>
-                ))}
-              </div>
+              <motion.button
+                onClick={handleClearFilters}
+                className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Effacer les filtres
+              </motion.button>
             </div>
           </motion.div>
 
@@ -190,70 +129,17 @@ const Products: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
           >
-            {filteredProducts.map((product, index) => (
-              <AnimatedCard
-                key={product.id}
+            {state.filteredProducts.map((product, index) => (
+              <ProductCard
+                key={product.product_id}
+                product={product}
                 delay={0.1 * index}
-                hover={true}
-                clickable={true}
-                className="group"
-              >
-                <Link to={`/produit/${product.id}`}>
-                  <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-red-500/50 transition-colors">
-                    <div className="relative aspect-square bg-gray-800 overflow-hidden">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      {product.isNew && (
-                        <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-red-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-bold">
-                          NOUVEAU
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    
-                    <div className="p-2.5 sm:p-3 md:p-4">
-                      <h3 className="text-white font-semibold text-xs sm:text-sm md:text-base mb-1.5 sm:mb-2 line-clamp-2">
-                        {product.name}
-                      </h3>
-                      
-                      <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                        <span className="text-red-500 font-bold text-xs sm:text-sm md:text-base">
-                          {formatCurrency(product.price)}
-                        </span>
-                        {product.originalPrice && (
-                          <span className="text-gray-500 line-through text-xs sm:text-sm">
-                            {formatCurrency(product.originalPrice)}
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-1">
-                        {product.sizes.slice(0, 3).map((size) => (
-                          <span
-                            key={size}
-                            className="bg-gray-800 text-gray-400 text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded"
-                          >
-                            {size}
-                          </span>
-                        ))}
-                        {product.sizes.length > 3 && (
-                          <span className="bg-gray-800 text-gray-400 text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">
-                            +{product.sizes.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </AnimatedCard>
+              />
             ))}
           </motion.div>
 
           {/* Message si aucun produit */}
-          {filteredProducts.length === 0 && (
+          {state.filteredProducts.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

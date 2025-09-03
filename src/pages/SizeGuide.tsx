@@ -358,3 +358,4 @@ const SizeGuide: React.FC = () => {
 };
 
 export default SizeGuide;
+

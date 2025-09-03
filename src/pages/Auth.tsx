@@ -7,14 +7,20 @@ import Header from '../components/common/Header.tsx';
 const Auth: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, login, register, isLoading, error, clearError } = useAuth();
+  const { user, login, register, isLoading, error, clearError, setError } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     phoneNumber: '',
     address: '',
   });
+
+  // Numéro admin prédéfini
+  const ADMIN_PHONE = '221781002253';
+  const ADMIN_PASSWORD = 'siggilepsixella2025';
 
   // Rediriger si déjà connecté
   useEffect(() => {
@@ -31,6 +37,11 @@ const Auth: React.FC = () => {
     let success = false;
     
     if (isLogin) {
+      // Vérifier si c'est le numéro admin
+      if (formData.phoneNumber.replace(/\D/g, '') === ADMIN_PHONE) {
+        setIsAdminMode(true);
+        return;
+      }
       success = await login(formData.phoneNumber);
     } else {
       success = await register(formData);
@@ -39,6 +50,19 @@ const Auth: React.FC = () => {
     if (success) {
       const returnTo = location.state?.returnTo || '/';
       navigate(returnTo);
+    }
+  };
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearError();
+
+    if (adminPassword === ADMIN_PASSWORD) {
+      // Rediriger vers le dashboard admin
+      navigate('/admin/dashboard');
+    } else {
+      // Afficher une erreur
+      setError('Mot de passe administrateur incorrect');
     }
   };
 
@@ -51,6 +75,8 @@ const Auth: React.FC = () => {
 
   const handleToggleMode = () => {
     setIsLogin(!isLogin);
+    setIsAdminMode(false);
+    setAdminPassword('');
     clearError();
     setFormData({
       firstName: '',
@@ -58,6 +84,12 @@ const Auth: React.FC = () => {
       phoneNumber: '',
       address: '',
     });
+  };
+
+  const handleBackToNormal = () => {
+    setIsAdminMode(false);
+    setAdminPassword('');
+    clearError();
   };
 
   return (
@@ -82,12 +114,15 @@ const Auth: React.FC = () => {
               </svg>
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3">
-              {isLogin ? 'CONNEXION' : 'INSCRIPTION'}
+              {isAdminMode ? 'ADMIN' : (isLogin ? 'CONNEXION' : 'INSCRIPTION')}
             </h1>
             <p className="text-gray-400 text-sm sm:text-base">
-              {isLogin 
-                ? 'Connectez-vous à votre compte SIGGIL' 
-                : 'Créez votre compte SIGGIL'
+              {isAdminMode 
+                ? 'Accès au panneau d\'administration' 
+                : (isLogin 
+                  ? 'Connectez-vous à votre compte SIGGIL' 
+                  : 'Créez votre compte SIGGIL'
+                )
               }
             </p>
           </motion.div>
@@ -99,9 +134,44 @@ const Auth: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={isAdminMode ? handleAdminLogin : handleSubmit} className="space-y-4 sm:space-y-6">
               <AnimatePresence mode="wait">
-                {!isLogin && (
+                {isAdminMode && (
+                  <motion.div
+                    key="admin-fields"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4 sm:space-y-6"
+                  >
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
+                      <div className="flex items-center mb-2">
+                        <svg className="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <span className="text-yellow-400 font-medium">Mode Administrateur</span>
+                      </div>
+                      <p className="text-yellow-300 text-sm">
+                        Numéro admin détecté. Veuillez entrer le mot de passe d'administration.
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5 sm:mb-2">
+                        Mot de passe administrateur
+                      </label>
+                      <input
+                        type="password"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        className="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-white placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/20 transition-all duration-200 text-sm sm:text-base"
+                        placeholder="Mot de passe admin"
+                        required
+                      />
+                    </div>
+                  </motion.div>
+                )}
+                {!isLogin && !isAdminMode && (
                   <motion.div
                     key="register-fields"
                     initial={{ opacity: 0, height: 0 }}
@@ -204,7 +274,11 @@ const Auth: React.FC = () => {
               <motion.button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 sm:py-4 px-4 rounded-xl hover:from-red-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium text-sm sm:text-base shadow-lg hover:shadow-xl hover:shadow-red-500/25"
+                className={`w-full py-3 sm:py-4 px-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-200 ${
+                  isAdminMode 
+                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 hover:shadow-yellow-500/25' 
+                    : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:shadow-red-500/25'
+                } text-white`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -214,7 +288,7 @@ const Auth: React.FC = () => {
                     Chargement...
                   </div>
                 ) : (
-                  isLogin ? 'Se connecter' : 'S\'inscrire'
+                  isAdminMode ? 'Accéder au dashboard' : (isLogin ? 'Se connecter' : 'S\'inscrire')
                 )}
               </motion.button>
             </form>
@@ -226,12 +300,21 @@ const Auth: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <button
-                onClick={handleToggleMode}
-                className="text-red-500 hover:text-red-400 text-xs sm:text-sm font-medium transition-colors duration-200"
-              >
-                {isLogin ? 'Pas de compte ? S\'inscrire' : 'Déjà un compte ? Se connecter'}
-              </button>
+              {isAdminMode ? (
+                <button
+                  onClick={handleBackToNormal}
+                  className="text-yellow-500 hover:text-yellow-400 text-xs sm:text-sm font-medium transition-colors duration-200"
+                >
+                  Retour à la connexion normale
+                </button>
+              ) : (
+                <button
+                  onClick={handleToggleMode}
+                  className="text-red-500 hover:text-red-400 text-xs sm:text-sm font-medium transition-colors duration-200"
+                >
+                  {isLogin ? 'Pas de compte ? S\'inscrire' : 'Déjà un compte ? Se connecter'}
+                </button>
+              )}
             </motion.div>
 
             {/* Back to Home */}

@@ -48,16 +48,19 @@ const Checkout: React.FC = () => {
       return;
     }
 
-    const success = await processPayment(cartState.total, formData.phoneNumber);
+    const success = await processPayment(cartState.total, formData.phoneNumber, user, cartState.items);
     
     if (success) {
       clearCart();
-      navigate('/order-confirmation', { 
-        state: { 
-          orderId: paymentState.orderId,
-          total: cartState.total 
-        } 
-      });
+      // Attendre un peu pour que l'état soit mis à jour
+      setTimeout(() => {
+        navigate('/order-confirmation', { 
+          state: { 
+            orderId: paymentState.orderId,
+            total: cartState.total 
+          } 
+        });
+      }, 100);
     }
   };
 

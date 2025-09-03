@@ -51,8 +51,8 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  const discount = product.originalPrice 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+  const discount = product.original_price 
+    ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
     : 0;
 
   const formatCurrency = (amount: number) => {
@@ -70,13 +70,14 @@ const ProductDetail: React.FC = () => {
     }
     
     addItem({
-      id: product.id,
+      id: product.product_id,
       name: product.name,
       price: product.price,
-      originalPrice: product.originalPrice || product.price,
-      image: product.images?.[selectedImage] || product.image,
+      originalPrice: product.original_price || product.price,
+      image: product.image_url || product.image_data || '/back.jpg',
       size: selectedSize,
-      color: selectedColor
+      color: selectedColor,
+      quantity: 1
     });
   };
 

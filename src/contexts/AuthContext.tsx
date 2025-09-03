@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { supabase } from '../lib/supabase.ts';
 
 interface User {
   id: string;
@@ -16,6 +17,7 @@ interface AuthContextType {
   register: (userData: Omit<User, 'id'>) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
+  setError: (error: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,27 +44,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
 
     try {
-      // Simulation d'une connexion
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       // Vérification simple du numéro de téléphone
       if (!phoneNumber || phoneNumber.length < 8) {
         throw new Error('Numéro de téléphone invalide');
       }
 
-      // Créer un utilisateur fictif pour la démo
-      const demoUser: User = {
-        id: '1',
-        firstName: 'Utilisateur',
-        lastName: 'Demo',
-        phoneNumber,
-        address: 'Dakar, Sénégal',
+      // Rechercher l'utilisateur dans Supabase
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('phone_number', phoneNumber)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Aucun utilisateur trouvé
+          throw new Error('Aucun compte trouvé avec ce numéro de téléphone');
+        }
+        throw new Error('Erreur lors de la connexion');
+      }
+
+      if (!data) {
+        throw new Error('Aucun compte trouvé avec ce numéro de téléphone');
+      }
+
+      // Convertir les données Supabase en format User
+      const user: User = {
+        id: data.id,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        phoneNumber: data.phone_number,
+        address: data.address,
       };
 
-      setUser(demoUser);
+      setUser(user);
       
-      // Sauvegarder dans localStorage
-      localStorage.setItem('siggil_user', JSON.stringify(demoUser));
+      // Sauvegarder dans localStorage pour la persistance
+      localStorage.setItem('siggil_user', JSON.stringify(user));
       
       return true;
     } catch (err) {
@@ -79,9 +97,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
 
     try {
-      // Simulation d'un enregistrement
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       // Validation des données
       if (!userData.firstName || !userData.lastName || !userData.phoneNumber) {
         throw new Error('Tous les champs sont obligatoires');
@@ -91,15 +106,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('Numéro de téléphone invalide');
       }
 
-      // Créer le nouvel utilisateur
+      // Vérifier si l'utilisateur existe déjà
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('phone_number', userData.phoneNumber)
+        .single();
+
+      if (existingUser) {
+        throw new Error('Un compte existe déjà avec ce numéro de téléphone');
+      }
+
+      // Insérer le nouvel utilisateur dans Supabase
+      const { data, error } = await supabase
+        .from('users')
+        .insert([
+          {
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            phone_number: userData.phoneNumber,
+            address: userData.address,
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        throw new Error('Erreur lors de l\'inscription');
+      }
+
+      if (!data) {
+        throw new Error('Erreur lors de l\'inscription');
+      }
+
+      // Convertir les données Supabase en format User
       const newUser: User = {
-        ...userData,
-        id: Date.now().toString(),
+        id: data.id,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        phoneNumber: data.phone_number,
+        address: data.address,
       };
 
       setUser(newUser);
       
-      // Sauvegarder dans localStorage
+      // Sauvegarder dans localStorage pour la persistance
       localStorage.setItem('siggil_user', JSON.stringify(newUser));
       
       return true;
@@ -120,6 +172,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const clearError = (): void => {
     setError(null);
+  };
+
+  const setErrorState = (error: string): void => {
+    setError(error);
   };
 
   // Charger l'utilisateur depuis localStorage au démarrage
@@ -144,6 +200,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     clearError,
+    setError: setErrorState,
   };
 
   return (

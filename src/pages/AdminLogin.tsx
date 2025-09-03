@@ -5,12 +5,13 @@ import { useAdmin } from '../contexts/AdminContext.tsx';
 import AnimatedText from '../components/common/AnimatedText.tsx';
 
 const AdminLogin: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { adminLogin, state, isAdminAuthenticated } = useAdmin();
   const navigate = useNavigate();
 
+  // Rediriger si déjà connecté
   useEffect(() => {
     if (isAdminAuthenticated) {
       navigate('/admin/dashboard');
@@ -19,7 +20,7 @@ const AdminLogin: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await adminLogin(username, password);
+    await adminLogin(phoneNumber, adminPassword);
   };
 
   return (
@@ -55,42 +56,42 @@ const AdminLogin: React.FC = () => {
 
           {/* Formulaire */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Nom d'utilisateur */}
+            {/* Numéro de téléphone admin */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
-                Nom d'utilisateur
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-300 mb-2">
+                Numéro de téléphone administrateur
               </label>
               <div className="relative">
                 <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="phoneNumber"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors"
-                  placeholder="Entrez votre nom d'utilisateur"
+                  placeholder="+221 78 100 22 53"
                   required
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            {/* Mot de passe */}
+            {/* Mot de passe admin */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Mot de passe
+              <label htmlFor="adminPassword" className="block text-sm font-medium text-gray-300 mb-2">
+                Mot de passe administrateur
               </label>
               <div className="relative">
                 <input
-                  id="password"
+                  id="adminPassword"
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors pr-12"
-                  placeholder="Entrez votre mot de passe"
+                  placeholder="Mot de passe administrateur"
                   required
                 />
                 <button
@@ -145,18 +146,28 @@ const AdminLogin: React.FC = () => {
                   Connexion en cours...
                 </div>
               ) : (
-                'Se connecter'
+                'Accéder au dashboard'
               )}
             </motion.button>
           </form>
 
           {/* Informations de sécurité */}
           <div className="mt-8 pt-6 border-t border-gray-800">
-            <div className="flex items-center justify-center text-gray-400 text-xs">
+            <div className="flex items-center justify-center text-gray-400 text-xs mb-4">
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
               Accès sécurisé - Administrateurs uniquement
+            </div>
+            
+            {/* Lien vers l'authentification normale */}
+            <div className="text-center">
+              <button
+                onClick={() => navigate('/auth')}
+                className="text-red-500 hover:text-red-400 text-sm transition-colors"
+              >
+                ← Retour à l'authentification normale
+              </button>
             </div>
           </div>
         </motion.div>

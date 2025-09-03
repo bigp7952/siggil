@@ -1,13 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || '';
+// Configuration Supabase directe
+const supabaseUrl = 'https://qibvvvbneqhsmuxrlfyg.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpYnZ2dmJuZXFoc211eHJsZnlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDQ5NDUsImV4cCI6MjA3MjIyMDk0NX0.CaZfiurdUVBFRKna4zFb8mpjP-0EqHGNjBAwFyYhed8';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Variables d\'environnement Supabase manquantes. Vérifiez votre fichier .env');
-  console.warn('Utilisez des valeurs par défaut pour éviter les erreurs.');
-}
-
+// Créer le client Supabase
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Types pour les tables Supabase
@@ -147,8 +144,7 @@ export interface Database {
           first_name: string;
           last_name: string;
           phone_number: string;
-          email: string;
-          city: string;
+          address: string;
           created_at: string;
           updated_at: string;
         };
@@ -157,8 +153,7 @@ export interface Database {
           first_name: string;
           last_name: string;
           phone_number: string;
-          email: string;
-          city: string;
+          address: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -167,8 +162,7 @@ export interface Database {
           first_name?: string;
           last_name?: string;
           phone_number?: string;
-          email?: string;
-          city?: string;
+          address?: string;
           created_at?: string;
           updated_at?: string;
         };

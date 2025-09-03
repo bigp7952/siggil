@@ -5,8 +5,6 @@ import {
   ProductUpdate, UserUpdate
 } from '../lib/supabase';
 
-
-
 // ===== SERVICES PRODUITS =====
 export const productService = {
   async getAllProducts(): Promise<Product[]> {

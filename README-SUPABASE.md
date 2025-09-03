@@ -127,3 +127,5 @@ En cas de problème :
 1. Vérifiez les logs de la console
 2. Vérifiez les logs Supabase
 3. Testez la connexion avec l'outil de test Supabase
+
+

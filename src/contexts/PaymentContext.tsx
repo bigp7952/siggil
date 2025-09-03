@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { createOrder } from '../services/orderService.ts';
 
 interface PaymentMethod {
   id: 'wave' | 'orange' | 'free';
   name: string;
-  icon: string;
+  icon: string | React.ReactNode;
   description: string;
 }
 
@@ -74,7 +75,7 @@ interface PaymentContextType {
   state: PaymentState;
   paymentMethods: PaymentMethod[];
   selectPaymentMethod: (method: PaymentMethod) => void;
-  processPayment: (amount: number, phoneNumber: string) => Promise<boolean>;
+  processPayment: (amount: number, phoneNumber: string, userInfo?: any, cartItems?: any[]) => Promise<boolean>;
   resetPayment: () => void;
   clearError: () => void;
 }
@@ -100,19 +101,23 @@ export const PaymentProvider: React.FC<PaymentProviderProps> = ({ children }) =>
     {
       id: 'wave',
       name: 'Wave',
-      icon: '🌊',
+      icon: '/wave.png',
       description: 'Paiement rapide et sécurisé avec Wave',
     },
     {
       id: 'orange',
       name: 'Orange Money',
-      icon: '🟠',
+      icon: '/om.png',
       description: 'Paiement mobile avec Orange Money',
     },
     {
       id: 'free',
       name: 'Paiement à la livraison',
-      icon: '💰',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      ),
       description: 'Payez à la réception de votre commande',
     },
   ];
@@ -121,7 +126,7 @@ export const PaymentProvider: React.FC<PaymentProviderProps> = ({ children }) =>
     dispatch({ type: 'SET_PAYMENT_METHOD', payload: method });
   };
 
-  const processPayment = async (amount: number, phoneNumber: string): Promise<boolean> => {
+  const processPayment = async (amount: number, phoneNumber: string, userInfo: any, cartItems: any[]): Promise<boolean> => {
     if (!state.selectedMethod) {
       dispatch({ type: 'SET_ERROR', payload: 'Veuillez sélectionner un mode de paiement' });
       return false;
@@ -141,24 +146,34 @@ export const PaymentProvider: React.FC<PaymentProviderProps> = ({ children }) =>
       // Simulation de succès/échec basée sur le numéro de téléphone
       const isSuccess = phoneNumber.length >= 8;
 
-      if (isSuccess) {
-        dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'success' });
-        
-        // Sauvegarder la commande
-        const order = {
-          id: orderId,
-          amount,
-          phoneNumber,
-          paymentMethod: state.selectedMethod.id,
-          status: 'paid',
-          createdAt: new Date().toISOString(),
-        };
+             if (isSuccess) {
+         dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'success' });
+         
+         // Créer la commande dans Supabase
+         const orderData = {
+           order_id: orderId,
+           user_id: userInfo?.id || 'anonymous',
+           user_info: {
+             firstName: userInfo?.firstName || 'Anonyme',
+             lastName: userInfo?.lastName || 'Utilisateur',
+             phoneNumber: phoneNumber,
+             address: userInfo?.address || 'Adresse non spécifiée',
+           },
+           items: cartItems,
+           total: amount,
+           payment_method: state.selectedMethod.id,
+           city: userInfo?.city || 'Dakar',
+         };
 
-        const existingOrders = JSON.parse(localStorage.getItem('siggil_orders') || '[]');
-        existingOrders.push(order);
-        localStorage.setItem('siggil_orders', JSON.stringify(existingOrders));
+         const savedOrder = await createOrder(orderData);
+         if (!savedOrder) {
+           throw new Error('Erreur lors de la sauvegarde de la commande');
+         }
 
-        return true;
+         console.log('Commande créée avec succès:', savedOrder);
+         console.log('OrderId dans le contexte:', orderId);
+         
+         return true;
       } else {
         throw new Error('Échec du paiement. Veuillez réessayer.');
       }

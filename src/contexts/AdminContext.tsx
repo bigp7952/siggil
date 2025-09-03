@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import { getAllOrders, updateOrderStatus as updateOrderStatusService, getOrderStats } from '../services/orderService.ts';
+import { getAllProducts, createProduct, updateProduct as updateProductService, deleteProduct as deleteProductService, getProductStats } from '../services/productService.ts';
 
 interface AdminUser {
   username: string;
@@ -6,9 +8,17 @@ interface AdminUser {
 }
 
 interface Order {
-  id: string;
-  userId: string;
-  userInfo: {
+  id?: string;
+  order_id: string;
+  userId?: string;
+  user_id?: string;
+  userInfo?: {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    address: string;
+  };
+  user_info?: {
     firstName: string;
     lastName: string;
     phoneNumber: string;
@@ -19,11 +29,15 @@ interface Order {
     name: string;
     price: number;
     quantity: number;
+    size?: string;
+    color?: string;
   }>;
   total: number;
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
-  paymentMethod: 'wave' | 'orange' | 'free';
-  createdAt: string;
+  paymentMethod?: 'wave' | 'orange' | 'free';
+  payment_method?: 'wave' | 'orange' | 'free';
+  createdAt?: string;
+  created_at?: string;
   city: string;
 }
 
@@ -47,17 +61,22 @@ interface PremiumRequest {
 }
 
 interface Product {
-  id: string;
+  id?: string;
+  product_id: string;
   name: string;
   category: string;
   price: number;
-  originalPrice?: number;
+  original_price?: number;
   stock: number;
-  image: string;
+  image_url?: string;
+  image_data?: string;
   sizes: string[];
   colors: string[];
-  isNew: boolean;
-  isActive: boolean;
+  is_new: boolean;
+  is_active: boolean;
+  description?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface AdminState {
@@ -218,17 +237,18 @@ const adminReducer = (state: AdminState, action: AdminAction): AdminState => {
 
 interface AdminContextType {
   state: AdminState;
-  adminLogin: (username: string, password: string) => Promise<void>;
+  adminLogin: (phoneNumber: string, password: string) => Promise<void>;
   adminLogout: () => void;
   loadOrders: () => void;
+  refreshOrders: () => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
   loadPremiumRequests: () => void;
   approvePremiumRequest: (requestId: string) => void;
   rejectPremiumRequest: (requestId: string) => void;
   loadProducts: () => void;
-  addProduct: (product: Omit<Product, 'id'>) => void;
-  updateProduct: (product: Product) => void;
-  deleteProduct: (productId: string) => void;
+  addProduct: (product: Omit<Product, 'product_id'>) => Promise<void>;
+  updateProduct: (product: Product) => Promise<void>;
+  deleteProduct: (productId: string) => Promise<void>;
   updateStats: () => void;
   clearError: () => void;
   isAdminAuthenticated: boolean;
@@ -273,23 +293,27 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     }
   }, [state.admin]);
 
-  const adminLogin = async (username: string, password: string): Promise<void> => {
+  const adminLogin = async (phoneNumber: string, password: string): Promise<void> => {
     dispatch({ type: 'ADMIN_LOGIN_START' });
 
     try {
       // Simuler une vérification
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (username === 'fallou' && password === 'lepsixella') {
+      // Vérifier avec les nouveaux identifiants admin
+      const ADMIN_PHONE = '221781002253';
+      const ADMIN_PASSWORD = 'siggilepsixella2025';
+
+      if (phoneNumber.replace(/\D/g, '') === ADMIN_PHONE && password === ADMIN_PASSWORD) {
         const admin: AdminUser = {
-          username: 'fallou',
+          username: 'admin',
           isAuthenticated: true,
         };
         dispatch({ type: 'ADMIN_LOGIN_SUCCESS', payload: admin });
       } else {
         dispatch({ 
           type: 'ADMIN_LOGIN_FAILURE', 
-          payload: 'Nom d\'utilisateur ou mot de passe incorrect.' 
+          payload: 'Numéro de téléphone ou mot de passe administrateur incorrect.' 
         });
       }
     } catch (error) {
@@ -304,30 +328,48 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     dispatch({ type: 'ADMIN_LOGOUT' });
   };
 
-  const loadOrders = (): void => {
-    // Charger les commandes depuis le localStorage
-    const savedOrders = localStorage.getItem('siggil_orders');
-    if (savedOrders) {
-      try {
-        const orders = JSON.parse(savedOrders);
-        dispatch({ type: 'LOAD_ORDERS', payload: orders });
-      } catch (error) {
-        console.error('Erreur lors du chargement des commandes:', error);
-      }
+  // Fonction pour normaliser les données des commandes
+  const normalizeOrder = (order: any): Order => {
+    return {
+      ...order,
+      userInfo: order.user_info || order.userInfo,
+      user_info: order.user_info || order.userInfo,
+      paymentMethod: order.payment_method || order.paymentMethod,
+      payment_method: order.payment_method || order.paymentMethod,
+      createdAt: order.created_at || order.createdAt,
+      created_at: order.created_at || order.createdAt,
+    };
+  };
+
+  const loadOrders = useCallback(async (): Promise<void> => {
+    try {
+      const orders = await getAllOrders();
+      const normalizedOrders = orders.map(normalizeOrder);
+      dispatch({ type: 'LOAD_ORDERS', payload: normalizedOrders });
+    } catch (error) {
+      console.error('Erreur lors du chargement des commandes:', error);
+      dispatch({ type: 'LOAD_ORDERS', payload: [] });
     }
-  };
+  }, []);
 
-  const updateOrderStatus = (orderId: string, status: Order['status']): void => {
-    dispatch({ type: 'UPDATE_ORDER_STATUS', payload: { orderId, status } });
-    
-    // Mettre à jour dans le localStorage
-    const updatedOrders = state.orders.map(order =>
-      order.id === orderId ? { ...order, status } : order
-    );
-    localStorage.setItem('siggil_orders', JSON.stringify(updatedOrders));
-  };
+  const refreshOrders = useCallback(async (): Promise<void> => {
+    await loadOrders();
+  }, [loadOrders]);
 
-  const loadPremiumRequests = (): void => {
+  const updateOrderStatus = useCallback(async (orderId: string, status: Order['status']): Promise<void> => {
+    try {
+      const success = await updateOrderStatusService(orderId, status);
+      if (success) {
+        dispatch({ type: 'UPDATE_ORDER_STATUS', payload: { orderId, status } });
+      } else {
+        console.error('Erreur lors de la mise à jour du statut de la commande');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du statut de la commande:', error);
+    }
+  }, []);
+
+  const loadPremiumRequests = useCallback((): void => {
     // Charger les demandes premium depuis le localStorage
     const savedRequests = localStorage.getItem('siggil_premium_requests');
     if (savedRequests) {
@@ -338,9 +380,9 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         console.error('Erreur lors du chargement des demandes premium:', error);
       }
     }
-  };
+  }, []);
 
-  const approvePremiumRequest = (requestId: string): void => {
+  const approvePremiumRequest = useCallback((requestId: string): void => {
     const code = `SIGGIL-${Date.now().toString().slice(-6)}`;
     dispatch({ type: 'APPROVE_PREMIUM_REQUEST', payload: { requestId, code } });
     
@@ -351,9 +393,9 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         : request
     );
     localStorage.setItem('siggil_premium_requests', JSON.stringify(updatedRequests));
-  };
+  }, [state.premiumRequests]);
 
-  const rejectPremiumRequest = (requestId: string): void => {
+  const rejectPremiumRequest = useCallback((requestId: string): void => {
     dispatch({ type: 'REJECT_PREMIUM_REQUEST', payload: requestId });
     
     // Mettre à jour dans le localStorage
@@ -363,85 +405,115 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         : request
     );
     localStorage.setItem('siggil_premium_requests', JSON.stringify(updatedRequests));
-  };
+  }, [state.premiumRequests]);
 
-  const loadProducts = (): void => {
-    // Charger les produits depuis le localStorage
-    const savedProducts = localStorage.getItem('siggil_products');
-    if (savedProducts) {
-      try {
-        const products = JSON.parse(savedProducts);
-        dispatch({ type: 'LOAD_PRODUCTS', payload: products });
-      } catch (error) {
-        console.error('Erreur lors du chargement des produits:', error);
-      }
+  const loadProducts = useCallback(async (): Promise<void> => {
+    try {
+      const products = await getAllProducts();
+      dispatch({ type: 'LOAD_PRODUCTS', payload: products });
+    } catch (error) {
+      console.error('Erreur lors du chargement des produits:', error);
+      dispatch({ type: 'LOAD_PRODUCTS', payload: [] });
     }
-  };
+  }, []);
 
-  const addProduct = (productData: Omit<Product, 'id'>): void => {
-    const newProduct: Product = {
-      ...productData,
-      id: Date.now().toString(),
-    };
-    dispatch({ type: 'ADD_PRODUCT', payload: newProduct });
-    
-    // Sauvegarder dans le localStorage
-    const updatedProducts = [...state.products, newProduct];
-    localStorage.setItem('siggil_products', JSON.stringify(updatedProducts));
-  };
+  const addProduct = useCallback(async (productData: Omit<Product, 'product_id'>): Promise<void> => {
+    try {
+      const productId = `PROD-${Date.now().toString().slice(-8)}`;
+      const newProductData = {
+        ...productData,
+        product_id: productId,
+      };
+      
+      const savedProduct = await createProduct(newProductData);
+      if (savedProduct) {
+        dispatch({ type: 'ADD_PRODUCT', payload: savedProduct });
+      } else {
+        console.error('Erreur lors de la création du produit');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la création du produit:', error);
+    }
+  }, []);
 
-  const updateProduct = (product: Product): void => {
-    dispatch({ type: 'UPDATE_PRODUCT', payload: product });
-    
-    // Mettre à jour dans le localStorage
-    const updatedProducts = state.products.map(p =>
-      p.id === product.id ? product : p
-    );
-    localStorage.setItem('siggil_products', JSON.stringify(updatedProducts));
-  };
+  const updateProduct = useCallback(async (product: Product): Promise<void> => {
+    try {
+      const success = await updateProductService(product.product_id, {
+        name: product.name,
+        category: product.category,
+        price: product.price,
+        original_price: product.original_price,
+        stock: product.stock,
+        image_url: product.image_url,
+        image_data: product.image_data,
+        sizes: product.sizes,
+        colors: product.colors,
+        is_new: product.is_new,
+        is_active: product.is_active,
+        description: product.description,
+      });
+      
+      if (success) {
+        dispatch({ type: 'UPDATE_PRODUCT', payload: product });
+      } else {
+        console.error('Erreur lors de la mise à jour du produit');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du produit:', error);
+    }
+  }, []);
 
-  const deleteProduct = (productId: string): void => {
-    dispatch({ type: 'DELETE_PRODUCT', payload: productId });
-    
-    // Mettre à jour dans le localStorage
-    const updatedProducts = state.products.filter(p => p.id !== productId);
-    localStorage.setItem('siggil_products', JSON.stringify(updatedProducts));
-  };
+  const deleteProduct = useCallback(async (productId: string): Promise<void> => {
+    try {
+      const success = await deleteProductService(productId);
+      if (success) {
+        dispatch({ type: 'DELETE_PRODUCT', payload: productId });
+      } else {
+        console.error('Erreur lors de la suppression du produit');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression du produit:', error);
+    }
+  }, []);
 
-  const updateStats = (): void => {
-    const orders = state.orders;
-    const customers = new Set(orders.map(order => order.userId));
-    const customersByCity: Record<string, number> = {};
-    
-    orders.forEach(order => {
-      const city = order.city || 'Inconnue';
-      customersByCity[city] = (customersByCity[city] || 0) + 1;
-    });
+  const updateStats = useCallback(async (): Promise<void> => {
+    try {
+      const orderStats = await getOrderStats();
+      const productStats = await getProductStats();
+      const customers = new Set(state.orders.map(order => order.userId || order.user_id));
+      const customersByCity: Record<string, number> = {};
+      
+      state.orders.forEach(order => {
+        const city = order.city || 'Inconnue';
+        customersByCity[city] = (customersByCity[city] || 0) + 1;
+      });
 
-    const stats = {
-      totalOrders: orders.length,
-      totalRevenue: orders
-        .filter(order => order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered')
-        .reduce((sum, order) => sum + order.total, 0),
-      pendingOrders: orders.filter(order => order.status === 'pending').length,
-      totalCustomers: customers.size,
-      customersByCity,
-      totalProducts: state.products.length,
-      lowStockProducts: state.products.filter(product => product.stock < 10).length,
-    };
+      const stats = {
+        totalOrders: orderStats.totalOrders,
+        totalRevenue: orderStats.totalRevenue,
+        pendingOrders: orderStats.pendingOrders,
+        totalCustomers: customers.size,
+        customersByCity,
+        totalProducts: productStats.totalProducts,
+        lowStockProducts: productStats.lowStockProducts,
+      };
 
-    dispatch({ type: 'UPDATE_STATS', payload: stats });
-  };
+      dispatch({ type: 'UPDATE_STATS', payload: stats });
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des statistiques:', error);
+    }
+  }, [state.orders]);
 
-  const clearError = (): void => {
+  const clearError = useCallback((): void => {
     dispatch({ type: 'CLEAR_ERROR' });
-  };
+  }, []);
 
   const value: AdminContextType = {
     state,
     adminLogin,
     adminLogout,
     loadOrders,
+    refreshOrders,
     updateOrderStatus,
     loadPremiumRequests,
     approvePremiumRequest,

@@ -146,3 +146,5 @@ Il suffit maintenant de :
 4. Tester la connexion
 
 **Votre site sera alors connecté à une base de données professionnelle avec toutes les fonctionnalités avancées !** 🚀
+
+

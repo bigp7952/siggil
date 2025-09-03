@@ -13,15 +13,17 @@ import Auth from './pages/Auth.tsx';
 import Cart from './pages/Cart.tsx';
 import Checkout from './pages/Checkout.tsx';
 import OrderConfirmation from './pages/OrderConfirmation.tsx';
+import UserOrders from './pages/UserOrders.tsx';
 import AdminLogin from './pages/AdminLogin.tsx';
 import AdminDashboard from './pages/AdminDashboard.tsx';
+import TestSupabase from './pages/TestSupabase.tsx';
 import PageTransition from './components/common/PageTransition.tsx';
 import { CartProvider } from './contexts/CartContext.tsx';
 import { AuthProvider } from './contexts/AuthContext.tsx';
 import { AdminProvider } from './contexts/AdminContext.tsx';
 import { ProductProvider } from './contexts/ProductContext.tsx';
 import { PaymentProvider } from './contexts/PaymentContext.tsx';
-import SupabaseStatus from './components/common/SupabaseStatus.tsx';
+import { FavoritesProvider } from './contexts/FavoritesContext.tsx';
 
 function App() {
   return (
@@ -30,35 +32,38 @@ function App() {
         <ProductProvider>
           <PaymentProvider>
             <CartProvider>
-              <Router>
-                <div className="App">
-                  <PageTransition>
-                    <Routes>
-                      {/* Routes publiques */}
-                      <Route path="/" element={<Home />} />
-                      <Route path="/produits" element={<Products />} />
-                      <Route path="/produit/:id" element={<ProductDetail />} />
-                      <Route path="/premium" element={<Premium />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/aide" element={<Help />} />
-                      <Route path="/livraison" element={<Delivery />} />
-                      <Route path="/retours" element={<Returns />} />
-                      <Route path="/taille-guide" element={<SizeGuide />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/panier" element={<Cart />} />
-                      <Route path="/checkout" element={<Checkout />} />
-                      <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                      
-                      {/* Routes admin */}
-                      <Route path="/admin/login" element={<AdminLogin />} />
-                      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                    </Routes>
-                  </PageTransition>
-                </div>
-              </Router>
-              
-              {/* Composant de statut Supabase */}
-              <SupabaseStatus />
+              <FavoritesProvider>
+                <Router>
+                  <div className="App">
+                    <PageTransition>
+                      <Routes>
+                        {/* Routes publiques */}
+                        <Route path="/" element={<Home />} />
+                        <Route path="/produits" element={<Products />} />
+                        <Route path="/produit/:id" element={<ProductDetail />} />
+                        <Route path="/premium" element={<Premium />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/aide" element={<Help />} />
+                        <Route path="/livraison" element={<Delivery />} />
+                        <Route path="/retours" element={<Returns />} />
+                        <Route path="/taille-guide" element={<SizeGuide />} />
+                        <Route path="/auth" element={<Auth />} />
+                        <Route path="/panier" element={<Cart />} />
+                        <Route path="/checkout" element={<Checkout />} />
+                        <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                        <Route path="/mes-commandes" element={<UserOrders />} />
+                        
+                        {/* Routes admin */}
+                        <Route path="/admin/login" element={<AdminLogin />} />
+                        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                        
+                        {/* Route de test */}
+                        <Route path="/test-supabase" element={<TestSupabase />} />
+                      </Routes>
+                    </PageTransition>
+                  </div>
+                </Router>
+              </FavoritesProvider>
             </CartProvider>
           </PaymentProvider>
         </ProductProvider>
