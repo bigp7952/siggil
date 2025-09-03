@@ -41,7 +41,7 @@ const UserOrders: React.FC = () => {
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUserOrders = async () => {
     try {

@@ -343,11 +343,13 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   const loadOrders = useCallback(async (): Promise<void> => {
     try {
+      console.log('🔄 Chargement des commandes...');
       const orders = await getAllOrders();
+      console.log('✅ Commandes chargées:', orders.length);
       const normalizedOrders = orders.map(normalizeOrder);
       dispatch({ type: 'LOAD_ORDERS', payload: normalizedOrders });
     } catch (error) {
-      console.error('Erreur lors du chargement des commandes:', error);
+      console.error('❌ Erreur lors du chargement des commandes:', error);
       dispatch({ type: 'LOAD_ORDERS', payload: [] });
     }
   }, []);
@@ -370,15 +372,25 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   }, []);
 
   const loadPremiumRequests = useCallback((): void => {
-    // Charger les demandes premium depuis le localStorage
-    const savedRequests = localStorage.getItem('siggil_premium_requests');
-    if (savedRequests) {
-      try {
-        const requests = JSON.parse(savedRequests);
-        dispatch({ type: 'LOAD_PREMIUM_REQUESTS', payload: requests });
-      } catch (error) {
-        console.error('Erreur lors du chargement des demandes premium:', error);
+    try {
+      console.log('🔄 Chargement des demandes premium...');
+      // Charger les demandes premium depuis le localStorage
+      const savedRequests = localStorage.getItem('siggil_premium_requests');
+      if (savedRequests) {
+        try {
+          const requests = JSON.parse(savedRequests);
+          console.log('✅ Demandes premium chargées:', requests.length);
+          dispatch({ type: 'LOAD_PREMIUM_REQUESTS', payload: requests });
+        } catch (error) {
+          console.error('❌ Erreur lors du chargement des demandes premium:', error);
+        }
+      } else {
+        console.log('ℹ️ Aucune demande premium trouvée');
+        dispatch({ type: 'LOAD_PREMIUM_REQUESTS', payload: [] });
       }
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des demandes premium:', error);
+      dispatch({ type: 'LOAD_PREMIUM_REQUESTS', payload: [] });
     }
   }, []);
 
@@ -409,10 +421,12 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   const loadProducts = useCallback(async (): Promise<void> => {
     try {
+      console.log('🔄 Chargement des produits...');
       const products = await getAllProducts();
+      console.log('✅ Produits chargés:', products.length);
       dispatch({ type: 'LOAD_PRODUCTS', payload: products });
     } catch (error) {
-      console.error('Erreur lors du chargement des produits:', error);
+      console.error('❌ Erreur lors du chargement des produits:', error);
       dispatch({ type: 'LOAD_PRODUCTS', payload: [] });
     }
   }, []);
@@ -478,6 +492,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   const updateStats = useCallback(async (): Promise<void> => {
     try {
+      console.log('🔄 Mise à jour des statistiques...');
       const orderStats = await getOrderStats();
       const productStats = await getProductStats();
       const customers = new Set(state.orders.map(order => order.userId || order.user_id));
@@ -498,9 +513,21 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         lowStockProducts: productStats.lowStockProducts,
       };
 
+      console.log('✅ Statistiques mises à jour:', stats);
       dispatch({ type: 'UPDATE_STATS', payload: stats });
     } catch (error) {
-      console.error('Erreur lors de la mise à jour des statistiques:', error);
+      console.error('❌ Erreur lors de la mise à jour des statistiques:', error);
+      // En cas d'erreur, utiliser des valeurs par défaut
+      const defaultStats = {
+        totalOrders: 0,
+        totalRevenue: 0,
+        pendingOrders: 0,
+        totalCustomers: 0,
+        customersByCity: {},
+        totalProducts: 0,
+        lowStockProducts: 0,
+      };
+      dispatch({ type: 'UPDATE_STATS', payload: defaultStats });
     }
   }, [state.orders]);
 

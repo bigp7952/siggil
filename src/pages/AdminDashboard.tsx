@@ -15,6 +15,7 @@ const AdminDashboard: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [initializationError, setInitializationError] = useState<string | null>(null);
   const [newProduct, setNewProduct] = useState({
     name: '',
     category: '',
@@ -41,21 +42,35 @@ const AdminDashboard: React.FC = () => {
     const initializeData = async () => {
       try {
         setIsInitializing(true);
-        await Promise.all([
-          loadOrders(),
-          loadPremiumRequests(),
-          loadProducts(),
-          updateStats()
+        
+        // Timeout de sécurité pour éviter le blocage infini
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Timeout: Initialisation trop lente')), 10000); // 10 secondes
+        });
+
+        await Promise.race([
+          Promise.all([
+            loadOrders(),
+            loadPremiumRequests(),
+            loadProducts(),
+            updateStats()
+          ]),
+          timeoutPromise
         ]);
+        
+        console.log('✅ Dashboard initialisé avec succès');
+        setInitializationError(null);
       } catch (error) {
-        console.error('Erreur lors de l\'initialisation des données:', error);
+        console.error('❌ Erreur lors de l\'initialisation des données:', error);
+        setInitializationError(error instanceof Error ? error.message : 'Erreur inconnue');
+        // En cas d'erreur, afficher quand même le dashboard avec des données vides
       } finally {
         setIsInitializing(false);
       }
     };
 
     initializeData();
-  }, [isAdminAuthenticated, navigate]); // Supprimer les dépendances qui causent des re-renders
+  }, [isAdminAuthenticated, navigate, loadOrders, loadPremiumRequests, loadProducts, updateStats]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = () => {
     adminLogout();
@@ -283,6 +298,46 @@ const AdminDashboard: React.FC = () => {
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-500 mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold mb-2">Chargement du Dashboard</h2>
           <p className="text-gray-400">Initialisation des données...</p>
+          <p className="text-sm text-gray-500 mt-2">Cela peut prendre quelques secondes</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher une erreur d'initialisation avec possibilité de retry
+  if (initializationError) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-4">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-semibold mb-4">Erreur d'Initialisation</h2>
+          <p className="text-gray-400 mb-6">{initializationError}</p>
+          <button
+            onClick={() => {
+              setInitializationError(null);
+              setIsInitializing(true);
+              // Recharger les données
+              const initializeData = async () => {
+                try {
+                  await Promise.all([
+                    loadOrders(),
+                    loadPremiumRequests(),
+                    loadProducts(),
+                    updateStats()
+                  ]);
+                  setInitializationError(null);
+                } catch (error) {
+                  setInitializationError(error instanceof Error ? error.message : 'Erreur inconnue');
+                } finally {
+                  setIsInitializing(false);
+                }
+              };
+              initializeData();
+            }}
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+          >
+            Réessayer
+          </button>
         </div>
       </div>
     );
