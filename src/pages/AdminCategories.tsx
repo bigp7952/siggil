@@ -26,7 +26,6 @@ const AdminCategories: React.FC = () => {
     color: '#3B82F6',
     sort_order: 0
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
 
   useEffect(() => {
@@ -69,7 +68,6 @@ const AdminCategories: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -129,7 +127,6 @@ const AdminCategories: React.FC = () => {
       color: '#3B82F6',
       sort_order: 0
     });
-    setImageFile(null);
     setImagePreview('');
     setEditingCategory(null);
     setShowForm(false);
@@ -359,7 +356,6 @@ const AdminCategories: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          setImageFile(null);
                           setImagePreview('');
                         }}
                         className="text-red-400 hover:text-red-300 text-sm"

@@ -30,7 +30,6 @@ const AdminDashboard: React.FC = () => {
     isActive: true,
     description: '',
   });
-  const [imagePreview, setImagePreview] = useState<string>('');
   const [editImagePreview, setEditImagePreview] = useState<string>('');
 
   useEffect(() => {
@@ -72,31 +71,13 @@ const AdminDashboard: React.FC = () => {
     };
 
     initializeData();
-  }, [isAdminAuthenticated, navigate]); // Suppression des dépendances qui causent les re-renders
+  }, [isAdminAuthenticated, navigate, loadOrders, loadPremiumRequests, loadProducts, loadCategories, updateStats]); // Ajouter toutes les dépendances nécessaires
 
   const handleLogout = () => {
     adminLogout();
     navigate('/admin/login');
   };
 
-  // Fonction pour rafraîchir manuellement les données
-  const handleRefreshData = async () => {
-    try {
-      setIsInitializing(true);
-      await Promise.all([
-        loadOrders(),
-        loadPremiumRequests(),
-        loadProducts(),
-        loadCategories(),
-        updateStats()
-      ]);
-      console.log('✅ Données rafraîchies avec succès');
-    } catch (error) {
-      console.error('❌ Erreur lors du rafraîchissement:', error);
-    } finally {
-      setIsInitializing(false);
-    }
-  };
 
   const handleAddProduct = async (productData: any) => {
     try {
@@ -123,33 +104,6 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        alert('Veuillez sélectionner un fichier image valide.');
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        alert('L\'image ne doit pas dépasser 5MB.');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setImagePreview(result);
-        setNewProduct({ ...newProduct, image: result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeImage = () => {
-    setImagePreview('');
-    setNewProduct({ ...newProduct, image: '' });
-  };
 
   const handleDeleteProduct = async (productId: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {

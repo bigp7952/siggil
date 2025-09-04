@@ -23,6 +23,29 @@ const SearchBar: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Recherche dans la base de données
+  const performSearch = async (searchQuery: string): Promise<SearchResult[]> => {
+    try {
+      // Utiliser la fonction de recherche du contexte
+      const searchResults = await searchProducts(searchQuery);
+      
+      // Convertir les produits en résultats de recherche
+      const results: SearchResult[] = searchResults.map(product => ({
+        product_id: product.product_id,
+        name: product.name,
+        category: product.category,
+        price: product.price,
+        image_url: product.image_url,
+        image_data: product.image_data,
+      }));
+      
+      return results.slice(0, 8); // Limiter à 8 résultats
+    } catch (error) {
+      console.error('Erreur lors de la recherche:', error);
+      return [];
+    }
+  };
+
   // Gestion du clic en dehors de la barre de recherche
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -62,30 +85,7 @@ const SearchBar: React.FC = () => {
 
     const timeoutId = setTimeout(searchProducts, 300);
     return () => clearTimeout(timeoutId);
-  }, [query]);
-
-  // Recherche dans la base de données
-  const performSearch = async (searchQuery: string): Promise<SearchResult[]> => {
-    try {
-      // Utiliser la fonction de recherche du contexte
-      const searchResults = await searchProducts(searchQuery);
-      
-      // Convertir les produits en résultats de recherche
-      const results: SearchResult[] = searchResults.map(product => ({
-        product_id: product.product_id,
-        name: product.name,
-        category: product.category,
-        price: product.price,
-        image_url: product.image_url,
-        image_data: product.image_data,
-      }));
-      
-      return results.slice(0, 8); // Limiter à 8 résultats
-    } catch (error) {
-      console.error('Erreur lors de la recherche:', error);
-      return [];
-    }
-  };
+  }, [query, performSearch]);
 
   // Gestion des touches clavier
   const handleKeyDown = (e: React.KeyboardEvent) => {

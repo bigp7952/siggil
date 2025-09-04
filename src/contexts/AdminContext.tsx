@@ -555,7 +555,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       };
       dispatch({ type: 'UPDATE_STATS', payload: defaultStats });
     }
-  }, []); // Pas de dépendance pour éviter les re-renders
+  }, [state.orders]); // Ajouter state.orders comme dépendance
 
   const clearError = useCallback((): void => {
     dispatch({ type: 'CLEAR_ERROR' });

@@ -8,11 +8,10 @@ import { getOrderById } from '../services/orderService.ts';
 const OrderConfirmation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orderId, total, error, cartItems, userInfo, deliveryAddress, deliveryCity, paymentMethod } = location.state || {};
+  const { orderId, total, cartItems, userInfo, deliveryAddress, deliveryCity, paymentMethod } = location.state || {};
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  const [orderFound, setOrderFound] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -33,7 +32,6 @@ const OrderConfirmation: React.FC = () => {
           
           if (orderData) {
             setOrder(orderData);
-            setOrderFound(true);
           } else {
             // Si la commande n'est pas trouvée, réessayer après un délai
             if (retryCount < 3) {
