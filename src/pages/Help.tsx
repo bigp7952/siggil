@@ -34,7 +34,7 @@ const Help: React.FC = () => {
     {
       id: 6,
       question: "Comment contacter le service client ?",
-      answer: "Vous pouvez nous contacter par téléphone au +221 77 123 45 67, par email à contact@siggil.com, ou via WhatsApp. Notre équipe est disponible du lundi au samedi de 9h à 18h."
+                      answer: "Vous pouvez nous contacter par téléphone au +221 78 100 22 53, par email à contact@siggil.com, ou via WhatsApp. Notre équipe est disponible du lundi au samedi de 9h à 18h."
     }
   ];
 

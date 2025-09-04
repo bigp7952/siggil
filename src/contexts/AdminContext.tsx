@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { getAllOrders, updateOrderStatus as updateOrderStatusService, getOrderStats } from '../services/orderService.ts';
 import { getAllProducts, createProduct, updateProduct as updateProductService, deleteProduct as deleteProductService, getProductStats } from '../services/productService.ts';
+import { getAllCategories } from '../services/categoryService.ts';
 
 interface AdminUser {
   username: string;
@@ -86,6 +87,7 @@ interface AdminState {
   orders: Order[];
   premiumRequests: PremiumRequest[];
   products: Product[];
+  categories: Array<{ id: string; name: string; image?: string }>;
   stats: {
     totalOrders: number;
     totalRevenue: number;
@@ -108,6 +110,7 @@ type AdminAction =
   | { type: 'APPROVE_PREMIUM_REQUEST'; payload: { requestId: string; code: string } }
   | { type: 'REJECT_PREMIUM_REQUEST'; payload: string }
   | { type: 'LOAD_PRODUCTS'; payload: Product[] }
+  | { type: 'LOAD_CATEGORIES'; payload: Array<{ id: string; name: string; image?: string }> }
   | { type: 'ADD_PRODUCT'; payload: Product }
   | { type: 'UPDATE_PRODUCT'; payload: Product }
   | { type: 'DELETE_PRODUCT'; payload: string }
@@ -121,6 +124,7 @@ const initialState: AdminState = {
   orders: [],
   premiumRequests: [],
   products: [],
+  categories: [],
   stats: {
     totalOrders: 0,
     totalRevenue: 0,
@@ -203,6 +207,11 @@ const adminReducer = (state: AdminState, action: AdminAction): AdminState => {
         ...state,
         products: action.payload,
       };
+    case 'LOAD_CATEGORIES':
+      return {
+        ...state,
+        categories: action.payload,
+      };
     case 'ADD_PRODUCT':
       return {
         ...state,
@@ -246,6 +255,7 @@ interface AdminContextType {
   approvePremiumRequest: (requestId: string) => void;
   rejectPremiumRequest: (requestId: string) => void;
   loadProducts: () => void;
+  loadCategories: () => void;
   addProduct: (product: Omit<Product, 'product_id'>) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
@@ -431,6 +441,19 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const loadCategories = useCallback(async (): Promise<void> => {
+    try {
+      console.log('🔄 Chargement des catégories...');
+      const categories = await getAllCategories();
+      console.log('✅ Catégories chargées:', categories.length);
+      console.log('📋 Détails des catégories:', categories);
+      dispatch({ type: 'LOAD_CATEGORIES', payload: categories });
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des catégories:', error);
+      dispatch({ type: 'LOAD_CATEGORIES', payload: [] });
+    }
+  }, []);
+
   const addProduct = useCallback(async (productData: Omit<Product, 'product_id'>): Promise<void> => {
     try {
       const productId = `PROD-${Date.now().toString().slice(-8)}`;
@@ -495,10 +518,13 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       console.log('🔄 Mise à jour des statistiques...');
       const orderStats = await getOrderStats();
       const productStats = await getProductStats();
-      const customers = new Set(state.orders.map(order => order.userId || order.user_id));
+      
+      // Obtenir les commandes actuelles depuis le state
+      const currentOrders = state.orders;
+      const customers = new Set(currentOrders.map(order => order.userId || order.user_id));
       const customersByCity: Record<string, number> = {};
       
-      state.orders.forEach(order => {
+      currentOrders.forEach(order => {
         const city = order.city || 'Inconnue';
         customersByCity[city] = (customersByCity[city] || 0) + 1;
       });
@@ -529,7 +555,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       };
       dispatch({ type: 'UPDATE_STATS', payload: defaultStats });
     }
-  }, [state.orders]);
+  }, []); // Pas de dépendance pour éviter les re-renders
 
   const clearError = useCallback((): void => {
     dispatch({ type: 'CLEAR_ERROR' });
@@ -546,6 +572,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     approvePremiumRequest,
     rejectPremiumRequest,
     loadProducts,
+    loadCategories,
     addProduct,
     updateProduct,
     deleteProduct,

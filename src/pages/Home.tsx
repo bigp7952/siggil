@@ -1,16 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Hero from '../components/home/Hero.tsx';
-import { useProducts } from '../contexts/ProductContext.tsx';
-import ProductCard from '../components/products/ProductCard.tsx';
+import PopularCategories from '../components/home/PopularCategories.tsx';
+import FeaturedProducts from '../components/home/FeaturedProducts.tsx';
 
 const Home: React.FC = () => {
-  const { state, loadNewProducts } = useProducts();
-
-  useEffect(() => {
-    loadNewProducts();
-  }, [loadNewProducts]);
 
   return (
     <div className="min-h-screen bg-black">
@@ -18,90 +13,10 @@ const Home: React.FC = () => {
       <Hero />
       
       {/* Featured Categories Section */}
-      <motion.section 
-        className="py-8 md:py-16 px-4"
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 md:mb-4">
-              CATÉGORIES <span className="text-red-500">POPULAIRES</span>
-            </h2>
-            <p className="text-gray-400 text-sm md:text-lg max-w-2xl mx-auto px-4">
-              Explorez nos collections les plus demandées
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-            {[
-              { name: 'T-Shirts', image: '/back.jpg', count: '24 produits', path: '/produits' },
-              { name: 'Hoodies', image: '/back.jpg', count: '18 produits', path: '/produits' },
-              { name: 'Pantalons', image: '/back.jpg', count: '12 produits', path: '/produits' },
-              { name: 'Accessoires', image: '/back.jpg', count: '8 produits', path: '/produits' }
-            ].map((category, index) => (
-              <motion.div
-                key={index}
-                className="group cursor-pointer"
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Link to={category.path}>
-                  <div className="relative overflow-hidden rounded-lg bg-gray-800">
-                    <div className="aspect-square bg-gradient-to-br from-gray-700 to-gray-800 relative">
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                      <div className="absolute bottom-3 md:bottom-4 left-3 md:left-4 right-3 md:right-4">
-                        <h3 className="text-white font-bold text-sm md:text-lg mb-1">{category.name}</h3>
-                        <p className="text-gray-300 text-xs md:text-sm">{category.count}</p>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
+      <PopularCategories />
 
       {/* Featured Products Section */}
-      <motion.section 
-        className="py-8 md:py-16 px-4 bg-gray-900/50"
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 md:mb-4">
-              PRODUITS <span className="text-red-500">EN VEDETTE</span>
-            </h2>
-            <p className="text-gray-400 text-sm md:text-lg max-w-2xl mx-auto px-4">
-              Nos articles les plus populaires du moment
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-            {state.newProducts.slice(0, 4).map((product, index) => (
-              <ProductCard key={product.product_id} product={product} delay={index * 0.1} />
-            ))}
-          </div>
-          
-          <div className="text-center mt-8 md:mt-12">
-            <Link to="/produits">
-              <motion.button
-                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 md:py-2.5 px-4 md:px-6 rounded-lg transition-colors duration-300 text-xs md:text-sm"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                VOIR TOUS LES PRODUITS
-              </motion.button>
-            </Link>
-          </div>
-        </div>
-      </motion.section>
+      <FeaturedProducts />
 
       {/* Benefits Section */}
       <motion.section 
@@ -275,7 +190,7 @@ const Home: React.FC = () => {
                   <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  <span>+221 77 123 45 67</span>
+                  <span>+221 78 100 22 53</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

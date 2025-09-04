@@ -125,3 +125,5 @@ La fonctionnalité est considérée comme **fonctionnelle** si :
 - **Bugs trouvés** : _______________
 - **Statut final** : ✅ Fonctionnel / ❌ Non fonctionnel
 
+
+

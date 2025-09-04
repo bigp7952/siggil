@@ -16,6 +16,7 @@ import OrderConfirmation from './pages/OrderConfirmation.tsx';
 import UserOrders from './pages/UserOrders.tsx';
 import AdminLogin from './pages/AdminLogin.tsx';
 import AdminDashboard from './pages/AdminDashboard.tsx';
+import AdminCategories from './pages/AdminCategories.tsx';
 import TestSupabase from './pages/TestSupabase.tsx';
 import PageTransition from './components/common/PageTransition.tsx';
 import { CartProvider } from './contexts/CartContext.tsx';
@@ -56,6 +57,7 @@ function App() {
                         {/* Routes admin */}
                         <Route path="/admin/login" element={<AdminLogin />} />
                         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                        <Route path="/admin/categories" element={<AdminCategories />} />
                         
                         {/* Route de test */}
                         <Route path="/test-supabase" element={<TestSupabase />} />

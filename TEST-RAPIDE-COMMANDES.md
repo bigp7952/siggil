@@ -89,3 +89,5 @@ console.log('Commandes dans l'état:', window.adminState?.orders);
 **Prêt pour la production ! 🚀**
 
 
+
+

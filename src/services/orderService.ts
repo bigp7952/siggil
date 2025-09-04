@@ -26,6 +26,10 @@ export interface Order {
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   payment_method: 'wave' | 'orange' | 'free';
   city: string;
+  delivery_address?: string;
+  delivery_city?: string;
+  tracking_info?: string;
+  notes?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -38,11 +42,15 @@ export interface CreateOrderData {
   total: number;
   payment_method: 'wave' | 'orange' | 'free';
   city: string;
+  delivery_address?: string;
+  delivery_city?: string;
 }
 
 // Créer une nouvelle commande
 export const createOrder = async (orderData: CreateOrderData): Promise<Order | null> => {
   try {
+    console.log('🔄 Tentative de création de commande avec les données:', orderData);
+    
     const { data, error } = await supabase
       .from('orders')
       .insert([orderData])
@@ -50,13 +58,14 @@ export const createOrder = async (orderData: CreateOrderData): Promise<Order | n
       .single();
 
     if (error) {
-      console.error('Erreur lors de la création de la commande:', error);
+      console.error('❌ Erreur lors de la création de la commande:', error);
       return null;
     }
 
+    console.log('✅ Commande créée avec succès:', data);
     return data;
   } catch (error) {
-    console.error('Erreur lors de la création de la commande:', error);
+    console.error('❌ Erreur lors de la création de la commande:', error);
     return null;
   }
 };
@@ -84,6 +93,8 @@ export const getAllOrders = async (): Promise<Order[]> => {
 // Récupérer une commande par ID
 export const getOrderById = async (orderId: string): Promise<Order | null> => {
   try {
+    console.log('🔍 Tentative de récupération de la commande:', orderId);
+    
     const { data, error } = await supabase
       .from('orders')
       .select('*')
@@ -91,13 +102,26 @@ export const getOrderById = async (orderId: string): Promise<Order | null> => {
       .single();
 
     if (error) {
-      console.error('Erreur lors de la récupération de la commande:', error);
-      return null;
+      console.error('❌ Erreur Supabase lors de la récupération de la commande:', error);
+      
+      // Si c'est une erreur de commande non trouvée, on peut réessayer
+      if (error.code === 'PGRST116') {
+        console.log('📝 Commande non trouvée, peut-être pas encore synchronisée');
+        return null;
+      }
+      
+      throw error;
     }
 
-    return data;
+    if (data) {
+      console.log('✅ Commande récupérée avec succès:', data);
+      return data;
+    } else {
+      console.log('📝 Aucune donnée retournée pour la commande:', orderId);
+      return null;
+    }
   } catch (error) {
-    console.error('Erreur lors de la récupération de la commande:', error);
+    console.error('❌ Erreur lors de la récupération de la commande:', error);
     return null;
   }
 };

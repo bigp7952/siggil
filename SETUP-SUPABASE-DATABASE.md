@@ -66,3 +66,5 @@ Si vous rencontrez des erreurs :
 Votre application est maintenant connectée à Supabase et prête pour la production !
 
 
+
+

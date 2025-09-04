@@ -75,7 +75,14 @@ interface PaymentContextType {
   state: PaymentState;
   paymentMethods: PaymentMethod[];
   selectPaymentMethod: (method: PaymentMethod) => void;
-  processPayment: (amount: number, phoneNumber: string, userInfo?: any, cartItems?: any[]) => Promise<boolean>;
+  processPayment: (
+    amount: number, 
+    phoneNumber: string, 
+    userInfo?: any, 
+    cartItems?: any[],
+    deliveryAddress?: string,
+    deliveryCity?: string
+  ) => Promise<boolean>;
   resetPayment: () => void;
   clearError: () => void;
 }
@@ -126,7 +133,14 @@ export const PaymentProvider: React.FC<PaymentProviderProps> = ({ children }) =>
     dispatch({ type: 'SET_PAYMENT_METHOD', payload: method });
   };
 
-  const processPayment = async (amount: number, phoneNumber: string, userInfo: any, cartItems: any[]): Promise<boolean> => {
+  const processPayment = async (
+    amount: number, 
+    phoneNumber: string, 
+    userInfo: any, 
+    cartItems: any[],
+    deliveryAddress?: string,
+    deliveryCity?: string
+  ): Promise<boolean> => {
     if (!state.selectedMethod) {
       dispatch({ type: 'SET_ERROR', payload: 'Veuillez sélectionner un mode de paiement' });
       return false;
@@ -157,21 +171,31 @@ export const PaymentProvider: React.FC<PaymentProviderProps> = ({ children }) =>
              firstName: userInfo?.firstName || 'Anonyme',
              lastName: userInfo?.lastName || 'Utilisateur',
              phoneNumber: phoneNumber,
-             address: userInfo?.address || 'Adresse non spécifiée',
+             address: deliveryAddress || userInfo?.address || 'Adresse non spécifiée',
            },
-           items: cartItems,
+           items: cartItems.map(item => ({
+             id: item.id,
+             name: item.name,
+             price: item.price,
+             quantity: item.quantity,
+             size: item.size,
+             color: item.color
+           })),
            total: amount,
            payment_method: state.selectedMethod.id,
-           city: userInfo?.city || 'Dakar',
+           city: deliveryCity || userInfo?.city || 'Dakar',
          };
 
+         console.log('🔄 Tentative de création de commande avec les données:', orderData);
+         
          const savedOrder = await createOrder(orderData);
          if (!savedOrder) {
+           console.error('❌ createOrder a retourné null');
            throw new Error('Erreur lors de la sauvegarde de la commande');
          }
 
-         console.log('Commande créée avec succès:', savedOrder);
-         console.log('OrderId dans le contexte:', orderId);
+         console.log('✅ Commande créée avec succès:', savedOrder);
+         console.log('✅ OrderId dans le contexte:', orderId);
          
          return true;
       } else {

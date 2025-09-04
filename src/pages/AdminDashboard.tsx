@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../contexts/AdminContext.tsx';
 import AnimatedText from '../components/common/AnimatedText.tsx';
 import AnimatedCard from '../components/common/AnimatedCard.tsx';
+import ProductForm from '../components/admin/ProductForm.tsx';
 
 const AdminDashboard: React.FC = () => {
-  const { state, adminLogout, loadOrders, loadPremiumRequests, loadProducts, updateStats, isAdminAuthenticated, approvePremiumRequest, rejectPremiumRequest, updateOrderStatus, addProduct, deleteProduct, updateProduct } = useAdmin();
+  const { state, adminLogout, loadOrders, loadPremiumRequests, loadProducts, loadCategories, updateStats, isAdminAuthenticated, approvePremiumRequest, rejectPremiumRequest, updateOrderStatus, addProduct, deleteProduct, updateProduct } = useAdmin();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddProductModal, setShowAddProductModal] = useState(false);
@@ -53,6 +54,7 @@ const AdminDashboard: React.FC = () => {
             loadOrders(),
             loadPremiumRequests(),
             loadProducts(),
+            loadCategories(),
             updateStats()
           ]),
           timeoutPromise
@@ -70,49 +72,48 @@ const AdminDashboard: React.FC = () => {
     };
 
     initializeData();
-  }, [isAdminAuthenticated, navigate, loadOrders, loadPremiumRequests, loadProducts, updateStats]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isAdminAuthenticated, navigate]); // Suppression des dépendances qui causent les re-renders
 
   const handleLogout = () => {
     adminLogout();
     navigate('/admin/login');
   };
 
-  const handleAddProduct = async () => {
+  // Fonction pour rafraîchir manuellement les données
+  const handleRefreshData = async () => {
     try {
-      if (!newProduct.name || !newProduct.category || newProduct.price <= 0) {
-        alert('Veuillez remplir tous les champs obligatoires');
-        return;
-      }
+      setIsInitializing(true);
+      await Promise.all([
+        loadOrders(),
+        loadPremiumRequests(),
+        loadProducts(),
+        loadCategories(),
+        updateStats()
+      ]);
+      console.log('✅ Données rafraîchies avec succès');
+    } catch (error) {
+      console.error('❌ Erreur lors du rafraîchissement:', error);
+    } finally {
+      setIsInitializing(false);
+    }
+  };
 
+  const handleAddProduct = async (productData: any) => {
+    try {
       await addProduct({
-        name: newProduct.name,
-        category: newProduct.category,
-        price: newProduct.price,
-        original_price: newProduct.originalPrice,
-        stock: newProduct.stock,
-        image_url: newProduct.image,
-        image_data: newProduct.image,
-        sizes: newProduct.sizes,
-        colors: newProduct.colors,
-        is_new: newProduct.isNew,
-        is_active: newProduct.isActive,
-        description: '',
+        name: productData.name,
+        category: productData.category,
+        price: productData.price,
+        original_price: productData.original_price,
+        stock: productData.stock,
+        image_url: productData.images[0] || '',
+        image_data: productData.images[0] || '',
+        sizes: productData.sizes,
+        colors: productData.colors,
+        is_new: productData.is_new,
+        is_active: productData.is_active,
+        description: productData.description,
       });
-      
-      setNewProduct({
-        name: '',
-        category: '',
-        price: 0,
-        originalPrice: 0,
-        stock: 0,
-        image: '',
-        sizes: [],
-        colors: [],
-        isNew: false,
-        isActive: true,
-      });
-      setImagePreview('');
-      setShowAddProductModal(false);
       
       // Recharger les produits pour afficher le nouveau
       loadProducts();
@@ -371,6 +372,7 @@ const AdminDashboard: React.FC = () => {
               { id: 'overview', label: 'Vue d\'ensemble' },
               { id: 'orders', label: 'Commandes' },
               { id: 'products', label: 'Produits' },
+              { id: 'categories', label: 'Catégories' },
               { id: 'premium', label: 'Demandes Premium' }
             ].map((tab) => (
               <button
@@ -678,6 +680,28 @@ const AdminDashboard: React.FC = () => {
           </motion.div>
         )}
 
+        {/* Categories Tab */}
+        {activeTab === 'categories' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="text-center">
+              <AnimatedText text="Gestion des Catégories" className="text-3xl font-bold mb-4" />
+              <p className="text-gray-400 mb-8">
+                Gérez les catégories populaires de votre site
+              </p>
+              <a
+                href="/admin/categories"
+                className="inline-block bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors font-semibold"
+              >
+                Gérer les Catégories
+              </a>
+            </div>
+          </motion.div>
+        )}
+
         {/* Premium Requests Tab */}
         {activeTab === 'premium' && (
           <motion.div
@@ -753,131 +777,13 @@ const AdminDashboard: React.FC = () => {
       </main>
 
       {/* Add Product Modal */}
-      {showAddProductModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 w-full max-w-md mx-4">
-            <h3 className="text-xl font-semibold mb-4">Ajouter un Produit</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Nom du produit</label>
-                <input
-                  type="text"
-                  value={newProduct.name}
-                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Catégorie</label>
-                <select
-                  value={newProduct.category}
-                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
-                >
-                  <option value="">Sélectionner une catégorie</option>
-                  <option value="T-shirts">T-Shirts</option>
-                  <option value="Vestes">Vestes</option>
-                  <option value="Pantalons">Pantalons</option>
-                  <option value="Chaussures">Chaussures</option>
-                  <option value="Accessoires">Accessoires</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Prix (XOF)</label>
-                  <input
-                    type="number"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Prix original (XOF)</label>
-                  <input
-                    type="number"
-                    value={newProduct.originalPrice}
-                    onChange={(e) => setNewProduct({ ...newProduct, originalPrice: Number(e.target.value) })}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Stock</label>
-                <input
-                  type="number"
-                  value={newProduct.stock}
-                  onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Image</label>
-                                 <div 
-                   className="border-2 border-dashed border-gray-700 rounded-lg p-4 text-center cursor-pointer hover:border-red-500 transition-colors"
-                   onClick={() => document.getElementById('image-upload')?.click()}
-                 >
-                   {imagePreview ? (
-                     <div className="relative">
-                       <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded" />
-                       <button
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           removeImage();
-                         }}
-                         className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
-                       >
-                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                         </svg>
-                       </button>
-                     </div>
-                   ) : (
-                     <div>
-                       <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                       </svg>
-                       <p className="text-gray-400 text-sm">Cliquez pour sélectionner une image</p>
-                     </div>
-                   )}
-                   <input
-                     id="image-upload"
-                     type="file"
-                     accept="image/*"
-                     onChange={handleImageUpload}
-                     className="hidden"
-                   />
-                 </div>
-              </div>
-
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setShowAddProductModal(false)}
-                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleAddProduct}
-                  disabled={!newProduct.name || !newProduct.category || newProduct.price <= 0}
-                  className={`flex-1 py-2 rounded-lg transition-colors ${
-                    !newProduct.name || !newProduct.category || newProduct.price <= 0
-                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                      : 'bg-red-500 hover:bg-red-600 text-white'
-                  }`}
-                >
-                  Ajouter
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ProductForm
+        isOpen={showAddProductModal}
+        onClose={() => setShowAddProductModal(false)}
+        onSubmit={handleAddProduct}
+        categories={state.categories}
+        mode="create"
+      />
 
       {/* Edit Product Modal */}
       {showEditProductModal && editingProduct && (

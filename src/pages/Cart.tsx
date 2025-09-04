@@ -23,20 +23,20 @@ const Cart: React.FC = () => {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <div className="pt-24 pb-16 px-4">
+      <div className="pt-24 pb-16 px-3 md:px-4">
         <div className="container mx-auto max-w-4xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
               MON <span className="text-red-500">PANIER</span>
             </h1>
-            <p className="text-gray-400">
+            <p className="text-gray-400 text-sm md:text-base px-2">
               Gérez vos articles et passez votre commande
             </p>
           </div>
 
           {/* Cart Content */}
-          <div className="bg-gray-900 rounded-lg p-8 border border-gray-800">
+          <div className="bg-gray-900 rounded-lg p-4 md:p-8 border border-gray-800">
             {state.items.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -60,42 +60,91 @@ const Cart: React.FC = () => {
                 {/* Cart Items */}
                 <div className="space-y-4">
                   {state.items.map((item) => (
-                    <div key={item.id} className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
-                      <div className="flex-1">
-                        <h3 className="text-white font-medium text-lg">{item.name}</h3>
-                        <p className="text-gray-400 text-sm">{item.size}</p>
-                        <p className="text-red-500 font-semibold text-lg">{formatCurrency(item.price)}</p>
+                    <div key={item.id} className="bg-gray-800 rounded-lg p-4">
+                      {/* Version Desktop */}
+                      <div className="hidden md:flex items-center space-x-4">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-white font-medium text-lg truncate">{item.name}</h3>
+                          <p className="text-gray-400 text-sm">{item.size}</p>
+                          <p className="text-red-500 font-semibold text-lg">{formatCurrency(item.price)}</p>
+                        </div>
+                        <div className="flex items-center space-x-3 flex-shrink-0">
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center text-white hover:bg-gray-600 transition-colors"
+                          >
+                            -
+                          </button>
+                          <span className="text-white font-medium w-12 text-center">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center text-white hover:bg-gray-600 transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-white font-bold text-lg">
+                            {formatCurrency(item.price * item.quantity)}
+                          </p>
+                          <button
+                            onClick={() => removeItem(item.id)}
+                            className="text-gray-400 hover:text-red-500 text-sm mt-1"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center text-white hover:bg-gray-600 transition-colors"
-                        >
-                          -
-                        </button>
-                        <span className="text-white font-medium w-12 text-center">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center text-white hover:bg-gray-600 transition-colors"
-                        >
-                          +
-                        </button>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-white font-bold text-lg">
-                          {formatCurrency(item.price * item.quantity)}
-                        </p>
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-gray-400 hover:text-red-500 text-sm mt-1"
-                        >
-                          Supprimer
-                        </button>
+
+                      {/* Version Mobile */}
+                      <div className="md:hidden space-y-3">
+                        <div className="flex items-start space-x-3">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-white font-medium text-base leading-tight mb-1">{item.name}</h3>
+                            <p className="text-gray-400 text-sm mb-2">{item.size}</p>
+                            <p className="text-red-500 font-semibold text-lg">{formatCurrency(item.price)}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center text-white hover:bg-gray-600 transition-colors"
+                            >
+                              -
+                            </button>
+                            <span className="text-white font-medium w-12 text-center">{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center text-white hover:bg-gray-600 transition-colors"
+                            >
+                              +
+                            </button>
+                          </div>
+                          
+                          <div className="text-right">
+                            <p className="text-white font-bold text-lg mb-1">
+                              {formatCurrency(item.price * item.quantity)}
+                            </p>
+                            <button
+                              onClick={() => removeItem(item.id)}
+                              className="text-red-400 hover:text-red-300 text-sm"
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -131,16 +180,16 @@ const Cart: React.FC = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <button
                       onClick={() => navigate('/produits')}
-                      className="bg-gray-700 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                      className="bg-gray-700 text-white py-3 px-4 md:px-6 rounded-lg hover:bg-gray-600 transition-colors font-medium text-sm md:text-base"
                     >
                       Continuer les achats
                     </button>
                     <button
                       onClick={handleCheckout}
-                      className="bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-6 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium"
+                      className="bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4 md:px-6 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium text-sm md:text-base"
                     >
                       Passer la commande
                     </button>

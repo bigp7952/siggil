@@ -108,7 +108,7 @@ interface ProductContextType {
   loadProducts: () => Promise<void>;
   loadNewProducts: () => Promise<void>;
   filterByCategory: (category: string) => Promise<void>;
-  searchProducts: (searchTerm: string) => Promise<void>;
+  searchProducts: (searchTerm: string) => Promise<Product[]>;
   clearFilters: () => void;
   getProductById: (productId: string) => Product | undefined;
 }
@@ -176,24 +176,24 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
   };
 
   // Rechercher des produits
-  const searchProducts = async (searchTerm: string): Promise<void> => {
-    dispatch({ type: 'SET_SEARCH_TERM', payload: searchTerm });
-    
+  const searchProducts = async (searchTerm: string): Promise<Product[]> => {
     if (!searchTerm.trim()) {
-      dispatch({ type: 'SET_FILTERED_PRODUCTS', payload: state.products });
-      return;
+      return state.products;
     }
 
-    dispatch({ type: 'SET_LOADING', payload: true });
-    
     try {
-      const products = await searchProducts(searchTerm);
-      dispatch({ type: 'SET_FILTERED_PRODUCTS', payload: products });
+      // Recherche locale dans les produits chargés
+      const searchLower = searchTerm.toLowerCase();
+      const filteredProducts = state.products.filter(product => 
+        product.name.toLowerCase().includes(searchLower) ||
+        product.category.toLowerCase().includes(searchLower) ||
+        product.description?.toLowerCase().includes(searchLower)
+      );
+      
+      return filteredProducts;
     } catch (error) {
       console.error('Erreur lors de la recherche:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Erreur lors de la recherche' });
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
+      return [];
     }
   };
 

@@ -114,7 +114,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
             {/* Bouton Like */}
             <button
               onClick={handleToggleFavorite}
-              className="absolute top-2 right-2 z-20 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+              className={`absolute top-2 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors z-20 ${
+                discount > 0 ? 'right-16' : 'right-2'
+              }`}
             >
               <svg
                                  className={`w-5 h-5 transition-colors ${

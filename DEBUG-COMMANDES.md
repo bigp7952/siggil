@@ -141,3 +141,5 @@ console.log('📊 Total commandes:', orders.length);
 Puis rechargez la page admin et vérifiez que la commande apparaît.
 
 
+
+

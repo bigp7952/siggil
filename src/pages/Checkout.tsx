@@ -6,6 +6,7 @@ import { usePayment } from '../contexts/PaymentContext.tsx';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import Header from '../components/common/Header.tsx';
 import AnimatedText from '../components/common/AnimatedText.tsx';
+import LocationPicker from '../components/common/LocationPicker.tsx';
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -18,9 +19,15 @@ const Checkout: React.FC = () => {
     lastName: user?.lastName || '',
     phoneNumber: user?.phoneNumber || '',
     address: user?.address || '',
-    city: '',
+    city: user?.city || '',
     deliveryInstructions: '',
   });
+
+  const [deliveryLocation, setDeliveryLocation] = useState<{
+    address: string;
+    city: string;
+    coordinates?: { lat: number; lng: number };
+  } | null>(null);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -37,6 +44,19 @@ const Checkout: React.FC = () => {
     });
   };
 
+  const handleLocationSelect = (location: {
+    address: string;
+    city: string;
+    coordinates?: { lat: number; lng: number };
+  }) => {
+    setDeliveryLocation(location);
+    setFormData(prev => ({
+      ...prev,
+      address: location.address,
+      city: location.city
+    }));
+  };
+
   const handlePayment = async () => {
     if (!paymentState.selectedMethod) {
       alert('Veuillez sélectionner un mode de paiement');
@@ -48,19 +68,79 @@ const Checkout: React.FC = () => {
       return;
     }
 
-    const success = await processPayment(cartState.total, formData.phoneNumber, user, cartState.items);
+    // Utiliser l'adresse de livraison si disponible, sinon l'adresse du formulaire
+    const finalAddress = deliveryLocation?.address || formData.address;
+    const finalCity = deliveryLocation?.city || formData.city;
+    
+    if (!finalAddress || !finalCity) {
+      alert('Veuillez sélectionner ou saisir une adresse de livraison');
+      return;
+    }
+
+    const success = await processPayment(
+      cartState.total, 
+      formData.phoneNumber, 
+      user, 
+      cartState.items,
+      finalAddress,
+      finalCity
+    );
     
     if (success) {
       clearCart();
-      // Attendre un peu pour que l'état soit mis à jour
-      setTimeout(() => {
-        navigate('/order-confirmation', { 
-          state: { 
-            orderId: paymentState.orderId,
-            total: cartState.total 
-          } 
-        });
-      }, 100);
+      
+      // Attendre que l'orderId soit disponible
+      let attempts = 0;
+      const maxAttempts = 50; // 5 secondes maximum
+      
+      const waitForOrderId = () => {
+        if (paymentState.orderId) {
+          console.log('OrderId trouvé, navigation vers confirmation:', paymentState.orderId);
+          navigate('/order-confirmation', { 
+            state: { 
+              orderId: paymentState.orderId,
+              total: cartState.total,
+              cartItems: cartState.items,
+              userInfo: {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phoneNumber: formData.phoneNumber,
+                address: finalAddress,
+                city: finalCity
+              },
+              deliveryAddress: finalAddress,
+              deliveryCity: finalCity,
+              paymentMethod: paymentState.selectedMethod?.id
+            } 
+          });
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          setTimeout(waitForOrderId, 100);
+        } else {
+          console.error('OrderId non trouvé après 5 secondes');
+          // Navigation de fallback avec toutes les informations disponibles
+          navigate('/order-confirmation', { 
+            state: { 
+              orderId: null,
+              total: cartState.total,
+              cartItems: cartState.items,
+              userInfo: {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phoneNumber: formData.phoneNumber,
+                address: finalAddress,
+                city: finalCity
+              },
+              deliveryAddress: finalAddress,
+              deliveryCity: finalCity,
+              paymentMethod: paymentState.selectedMethod?.id,
+              error: 'ID de commande non disponible'
+            } 
+          });
+        }
+      };
+      
+      waitForOrderId();
     }
   };
 
@@ -120,9 +200,11 @@ const Checkout: React.FC = () => {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
+                      placeholder="Votre prénom"
                       required
                     />
                   </div>
+                  
                   <div>
                     <label className="block text-gray-300 text-sm font-medium mb-2">
                       Nom *
@@ -133,6 +215,7 @@ const Checkout: React.FC = () => {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
+                      placeholder="Votre nom"
                       required
                     />
                   </div>
@@ -155,32 +238,25 @@ const Checkout: React.FC = () => {
 
                 <div>
                   <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Adresse *
+                    Adresse de livraison *
                   </label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
-                    placeholder="Adresse complète"
-                    required
+                  <LocationPicker 
+                    onLocationSelect={handleLocationSelect}
+                    initialAddress={formData.address}
+                    initialCity={formData.city}
                   />
-                </div>
-
-                <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Ville *
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
-                    placeholder="Ex: Dakar"
-                    required
-                  />
+                  
+                  {/* Affichage de l'adresse sélectionnée */}
+                  {deliveryLocation && (
+                    <div className="mt-3 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
+                      <p className="text-green-400 text-sm font-medium">
+                        📍 Adresse de livraison sélectionnée :
+                      </p>
+                      <p className="text-white text-sm mt-1">
+                        {deliveryLocation.address}, {deliveryLocation.city}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>

@@ -175,7 +175,7 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-white font-medium text-xs sm:text-sm md:text-base">Téléphone</p>
-                    <p className="text-gray-400 text-xs sm:text-sm md:text-base">+221 77 123 45 67</p>
+                    <p className="text-gray-400 text-xs sm:text-sm md:text-base">+221 78 100 22 53</p>
                   </div>
                 </div>
                 
