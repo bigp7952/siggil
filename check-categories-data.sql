@@ -39,3 +39,4 @@ ON CONFLICT (name) DO NOTHING;
 SELECT * FROM categories ORDER BY sort_order;
 
 
+

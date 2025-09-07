@@ -20,3 +20,4 @@ FROM categories
 ORDER BY sort_order;
 
 
+

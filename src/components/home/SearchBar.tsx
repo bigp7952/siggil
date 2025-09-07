@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../../contexts/ProductContext.tsx';
@@ -24,7 +24,7 @@ const SearchBar: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Recherche dans la base de données
-  const performSearch = async (searchQuery: string): Promise<SearchResult[]> => {
+  const performSearch = useCallback(async (searchQuery: string): Promise<SearchResult[]> => {
     try {
       // Utiliser la fonction de recherche du contexte
       const searchResults = await searchProducts(searchQuery);
@@ -44,7 +44,7 @@ const SearchBar: React.FC = () => {
       console.error('Erreur lors de la recherche:', error);
       return [];
     }
-  };
+  }, [searchProducts]);
 
   // Gestion du clic en dehors de la barre de recherche
   useEffect(() => {

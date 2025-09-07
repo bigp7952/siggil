@@ -17,19 +17,6 @@ const AdminDashboard: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initializationError, setInitializationError] = useState<string | null>(null);
-  const [newProduct, setNewProduct] = useState({
-    name: '',
-    category: '',
-    price: 0,
-    originalPrice: 0,
-    stock: 0,
-    image: '',
-    sizes: [] as string[],
-    colors: [] as string[],
-    isNew: false,
-    isActive: true,
-    description: '',
-  });
   const [editImagePreview, setEditImagePreview] = useState<string>('');
 
   useEffect(() => {

@@ -68,3 +68,4 @@ Votre application est maintenant connectée à Supabase et prête pour la produc
 
 
 
+
