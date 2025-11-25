@@ -10,8 +10,8 @@ node_modules/
 /build
 /dist
 
-# Environment variables - NE JAMAIS COMMITER LES FICHIERS .env
-.env
+# Environment variables - .env est maintenant commité pour Netlify
+# .env
 .env.local
 .env.development.local
 .env.test.local
