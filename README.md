@@ -1,6 +1,6 @@
 # 🏪 SIGGIL - Site E-commerce Streetwear
 
-Un site e-commerce moderne et premium pour la marque de streetwear SIGGIL, développé avec React, TypeScript et Tailwind CSS.
+Un site e-commerce moderne et premium pour la marque de streetwear SIGGIL, développé avec React, TypeScript, Tailwind CSS, Supabase et déployé sur Netlify.
 
 ## 🎨 Design & Identité Visuelle
 
@@ -30,6 +30,7 @@ Un site e-commerce moderne et premium pour la marque de streetwear SIGGIL, déve
 - Compteurs de disponibilité
 - Avantages VIP
 - Design exclusif avec effets gold/rouge
+- Système de demandes premium avec validation admin
 
 ### 📞 Page Contact
 - Formulaire de contact stylé
@@ -42,86 +43,173 @@ Un site e-commerce moderne et premium pour la marque de streetwear SIGGIL, déve
 - Gestion des quantités
 - Calcul automatique des totaux
 - Animations fluides
+- Persistance avec Supabase
+
+### 👨‍💼 Panel Admin
+- Dashboard avec statistiques et graphiques
+- Gestion des produits (CRUD complet)
+- Gestion des commandes avec suivi de statut
+- Gestion des catégories
+- Gestion des demandes premium
+- Outils de recherche, filtrage et tri
+- Export CSV des données
+- Visualisation avec graphiques (Recharts)
 
 ## 🛠️ Technologies Utilisées
 
-- **React 18** avec Hooks et Context
+- **React 19** avec Hooks et Context
 - **TypeScript** pour le typage statique
 - **Tailwind CSS** pour le styling
 - **Framer Motion** pour les animations
 - **React Router** pour la navigation
-- **Heroicons** pour les icônes
+- **Supabase** pour le backend (base de données, authentification, storage)
+- **Recharts** pour les graphiques
+- **Netlify** pour le déploiement
 
 ## 📁 Structure du Projet
 
 ```
-src/
-├── components/
-│   ├── common/
-│   │   ├── Header.tsx          # Header avec logo et panier
-│   │   └── Navigation.tsx      # Navigation principale
-│   ├── home/
-│   │   └── Hero.tsx           # Section hero avec assets SIGGIL
-│   └── cart/
-│       └── Cart.tsx           # Composant panier
-├── pages/
-│   ├── Home.tsx               # Page d'accueil
-│   ├── Products.tsx           # Catalogue produits
-│   ├── Premium.tsx            # Section premium
-│   └── Contact.tsx            # Page contact
-└── assets/
-    └── images/                # Images SIGGIL
+siggil/
+├── REACT/                    # Application React principale
+│   ├── src/
+│   │   ├── components/      # Composants React
+│   │   ├── pages/           # Pages de l'application
+│   │   ├── contexts/        # Context API (Cart, Auth, etc.)
+│   │   ├── lib/             # Configuration Supabase
+│   │   ├── services/        # Services (upload images, etc.)
+│   │   └── utils/           # Utilitaires
+│   ├── public/              # Fichiers statiques
+│   ├── build/               # Build de production (généré)
+│   ├── .env.example         # Exemple de variables d'environnement
+│   └── package.json
+├── netlify.toml             # Configuration Netlify
+├── .gitignore              # Fichiers à ignorer par Git
+└── README.md               # Ce fichier
 ```
 
-## 🎯 Assets SIGGIL Intégrés
+## 🚀 Installation et Configuration
 
-- **back.jpg** : Arrière-plan principal urbain
-- **logo.png** : Élément graphique rouge
-- **nom.png** : Texte SIGGIL stylisé
-- **personne.png** : Photo du personnage central
-- **fade.png** : Dégradé de transition
+### 1. Cloner le projet
 
-## 🚀 Installation et Démarrage
-
-1. **Cloner le projet**
-   ```bash
-   git clone [url-du-repo]
-   cd siggil
-   ```
-
-2. **Installer les dépendances**
-   ```bash
-   npm install
-   ```
-
-3. **Démarrer le serveur de développement**
-   ```bash
-   npm start
-   ```
-
-4. **Ouvrir dans le navigateur**
-   ```
-   http://localhost:3000
-   ```
-
-## 🎨 Personnalisation
-
-### Couleurs
-Les couleurs sont définies dans `src/index.css` :
-```css
-:root {
-  --primary-black: #1a1a1a;
-  --secondary-black: #2d2d2d;
-  --accent-red: #ff0000;
-  --white: #ffffff;
-}
+```bash
+git clone https://github.com/votre-username/siggil.git
+cd siggil/REACT
 ```
 
-### Animations
-- Parallaxe sur les éléments hero
-- Hover effects sur les cartes produits
-- Transitions fluides entre pages
-- Animations de chargement
+### 2. Installer les dépendances
+
+```bash
+npm install
+```
+
+### 3. Configuration Supabase
+
+1. Créez un projet sur [Supabase](https://supabase.com)
+2. Copiez le fichier `.env.example` en `.env` :
+   ```bash
+   cp .env.example .env
+   ```
+3. Remplissez les variables dans `.env` :
+   ```env
+   REACT_APP_SUPABASE_URL=https://votre-projet.supabase.co
+   REACT_APP_SUPABASE_ANON_KEY=votre_anon_key_ici
+   REACT_APP_SUPABASE_SERVICE_KEY=votre_service_key_ici
+   ```
+
+### 4. Configuration de la base de données
+
+Exécutez les scripts SQL dans Supabase (dans l'ordre) :
+- `SUPABASE-COMPLETE-SETUP.sql` - Configuration complète
+- `ADD_PREMIUM_FIELD.sql` - Ajout du champ premium
+- `ADD-ADMIN-USER.sql` - Création d'un utilisateur admin
+- `SUPABASE_STORAGE_POLICIES.sql` - Politiques de stockage
+
+Voir les fichiers `.md` dans `REACT/` pour les instructions détaillées.
+
+### 5. Démarrer le serveur de développement
+
+```bash
+npm start
+```
+
+L'application sera accessible sur `http://localhost:3000`
+
+## 🌐 Déploiement sur Netlify
+
+### Configuration automatique
+
+1. Connectez votre repository GitHub à Netlify
+2. Configurez les variables d'environnement dans Netlify Dashboard :
+   - `REACT_APP_SUPABASE_URL`
+   - `REACT_APP_SUPABASE_ANON_KEY`
+   - `REACT_APP_SUPABASE_SERVICE_KEY` (optionnel, pour fonctions serverless)
+
+3. Netlify détectera automatiquement la configuration dans `netlify.toml`
+
+### Configuration manuelle
+
+Si vous déployez manuellement :
+- Base directory: `REACT`
+- Build command: `npm run build`
+- Publish directory: `REACT/build`
+
+## 🔐 Variables d'environnement
+
+### Développement local
+Créez un fichier `.env` dans `REACT/` avec :
+```env
+REACT_APP_SUPABASE_URL=https://votre-projet.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=votre_anon_key
+REACT_APP_SUPABASE_SERVICE_KEY=votre_service_key
+```
+
+### Production (Netlify)
+Configurez les variables dans Netlify Dashboard :
+- Site settings → Environment variables
+
+⚠️ **Important** : Ne jamais commiter le fichier `.env` sur GitHub !
+
+## 📊 Base de données Supabase
+
+### Tables principales
+
+- **products** : Catalogue de produits
+- **categories** : Catégories de produits
+- **orders** : Commandes clients
+- **users** : Utilisateurs (authentification par téléphone)
+- **premium_requests** : Demandes d'accès premium
+- **admin_users** : Utilisateurs administrateurs
+
+### Storage
+
+- **product-images** : Images des produits
+- **category-images** : Images des catégories
+- **premium-proofs** : Preuves de paiement premium
+
+## 🎯 Scripts Disponibles
+
+```bash
+# Développement
+npm start          # Démarre le serveur de développement
+npm run dev        # Alias pour npm start
+
+# Production
+npm run build      # Construit l'application pour la production
+
+# Tests
+npm test           # Lance les tests
+
+# Eject (irréversible)
+npm run eject      # Éjecte la configuration Create React App
+```
+
+## 🔧 Configuration Netlify
+
+Le fichier `netlify.toml` configure :
+- Le dossier de build (`REACT`)
+- Les redirections pour React Router
+- Les headers de sécurité
+- Le cache des assets statiques
 
 ## 📱 Responsive Design
 
@@ -129,49 +217,40 @@ Les couleurs sont définies dans `src/index.css` :
 - **Tablet** : Grille 2 colonnes
 - **Desktop** : Grille 3-4 colonnes, navigation complète
 
-## 🔧 Scripts Disponibles
+## 🛡️ Sécurité
 
-- `npm start` : Démarre le serveur de développement
-- `npm run build` : Construit l'application pour la production
-- `npm test` : Lance les tests
-- `npm run eject` : Éjecte la configuration (irréversible)
+- Variables d'environnement pour les clés Supabase
+- Authentification par numéro de téléphone
+- RLS (Row Level Security) activé sur Supabase
+- Headers de sécurité configurés sur Netlify
 
-## 🎯 Fonctionnalités E-commerce
+## 📄 Documentation
 
-### Système de Panier
-- Ajout/suppression d'articles
-- Modification des quantités
-- Calcul automatique des totaux
-- Persistance des données (simulation)
+Consultez les fichiers `.md` dans `REACT/` pour :
+- Configuration Supabase
+- Setup des utilisateurs admin
+- Configuration du système premium
+- Résolution de problèmes
 
-### Filtres et Recherche
-- Filtrage par catégorie
-- Filtrage par taille
-- Système de tri
-- Recherche de produits
+## 🤝 Contribution
 
-### Authentification
-- Système simplifié par numéro de téléphone
-- Pas de mot de passe requis
-- Sauvegarde automatique du panier
+1. Fork le projet
+2. Créez une branche (`git checkout -b feature/AmazingFeature`)
+3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
 
-## 🚀 Déploiement
-
-Le projet peut être déployé sur :
-- **Vercel** : Déploiement automatique
-- **Netlify** : Drag & drop du dossier build
-- **GitHub Pages** : Via GitHub Actions
-
-## 📄 Licence
+## 📝 Licence
 
 Ce projet est développé pour SIGGIL. Tous droits réservés.
 
-## 👥 Équipe
+## 👥 Support
 
-- **Design** : SIGGIL Brand Team
-- **Développement** : Assistant IA
-- **Technologies** : React, TypeScript, Tailwind CSS
+Pour toute question ou problème :
+- Ouvrez une issue sur GitHub
+- Consultez la documentation dans `REACT/*.md`
 
 ---
 
 **SIGGIL** - Plus qu'une marque, une identité urbaine. 🏪✨
+
