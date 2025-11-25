@@ -44,7 +44,7 @@ export const uploadProductImage = async (
     console.log('Product ID:', productId);
 
     // Upload vers Supabase Storage
-    const { data, error } = await supabaseAdmin.storage
+    const { error } = await supabaseAdmin.storage
       .from(PRODUCTS_BUCKET)
       .upload(filePath, file, {
         cacheControl: '3600',
@@ -82,9 +82,7 @@ export const uploadMultipleProductImages = async (
   files: File[],
   productId: string
 ): Promise<string[]> => {
-  const uploadPromises = files.map((file, index) => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${productId}-${index}-${Date.now()}.${fileExt}`;
+  const uploadPromises = files.map((file) => {
     return uploadProductImage(file, productId);
   });
 
@@ -112,7 +110,7 @@ export const uploadCategoryImage = async (
     console.log('Upload de l\'image catégorie:', filePath);
 
     // Upload vers Supabase Storage
-    const { data, error } = await supabaseAdmin.storage
+    const { error } = await supabaseAdmin.storage
       .from(CATEGORIES_BUCKET)
       .upload(filePath, file, {
         cacheControl: '3600',

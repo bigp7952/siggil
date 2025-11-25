@@ -15,7 +15,7 @@ export const uploadPremiumProof = async (
     const fileExt = file.name.split('.').pop();
     const fileName = `${requestId}/proof-${proofIndex}.${fileExt}`;
     
-    const { data, error } = await supabaseAdmin.storage
+    const { error } = await supabaseAdmin.storage
       .from(PREMIUM_BUCKET)
       .upload(fileName, file, {
         cacheControl: '3600',

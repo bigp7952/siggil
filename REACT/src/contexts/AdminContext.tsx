@@ -908,8 +908,8 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         .select('*')
         .eq('is_active', true);
 
-      // Charger les utilisateurs uniques
-      const { data: usersData } = await supabaseAdmin
+      // Charger les utilisateurs uniques (pour statistiques futures)
+      await supabaseAdmin
         .from('users')
         .select('id, city');
 

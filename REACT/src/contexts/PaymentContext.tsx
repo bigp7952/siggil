@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useMemo, ReactNode } from 'react';
 import { supabase } from '../lib/supabase.ts';
 import { markPremiumCodeAsUsed } from '../services/premiumService.ts';
 
@@ -106,7 +106,7 @@ export const PaymentProvider: React.FC<PaymentProviderProps> = ({ children }) =>
   const [state, dispatch] = useReducer(paymentReducer, initialState);
 
   // Paiement à la livraison uniquement
-  const paymentMethods: PaymentMethod[] = [
+  const paymentMethods: PaymentMethod[] = useMemo(() => [
     {
       id: 'free',
       name: 'Paiement à la livraison',
@@ -117,7 +117,7 @@ export const PaymentProvider: React.FC<PaymentProviderProps> = ({ children }) =>
       ),
       description: 'Payez à la réception de votre commande',
     },
-  ];
+  ], []);
 
   // Sélectionner automatiquement le paiement à la livraison
   useEffect(() => {

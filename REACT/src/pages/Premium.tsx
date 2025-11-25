@@ -8,12 +8,12 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { useProducts } from '../contexts/ProductContext.tsx';
 import ProductCard from '../components/products/ProductCard.tsx';
 import PremiumOnboarding from '../components/premium/PremiumOnboarding.tsx';
-import { formatImageSrc } from '../utils/imageUtils.ts';
+// formatImageSrc removed - not used
 
 const Premium: React.FC = () => {
   const { showError, showSuccess } = useToast();
   const { user } = useAuth();
-  const { state: productState } = useProducts();
+  // productState removed - not used
   const [step, setStep] = useState<'locked' | 'form' | 'submitted' | 'code' | 'onboarding' | 'products'>('locked');
   const [premiumProducts, setPremiumProducts] = useState<any[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);

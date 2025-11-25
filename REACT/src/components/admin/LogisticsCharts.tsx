@@ -120,7 +120,7 @@ const LogisticsCharts: React.FC<LogisticsChartsProps> = ({ orders }) => {
       .slice(0, 5);
   }, [orders]);
 
-  const COLORS = ['#ffba00', '#ff6c00', '#e53637', '#10b981', '#3b82f6'];
+  // COLORS array removed - not used
 
   if (orders.length === 0) {
     return (
