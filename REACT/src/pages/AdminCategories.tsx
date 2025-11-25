@@ -40,7 +40,7 @@ const AdminCategories: React.FC = () => {
   });
   const [imagePreview, setImagePreview] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  // uploadingImage state removed - setUploadingImage is used but uploadingImage value is never read
 
   useEffect(() => {
     loadCategories();
@@ -152,8 +152,6 @@ const AdminCategories: React.FC = () => {
     
     console.log('Début de la soumission du formulaire');
     console.log('Données du formulaire:', formData);
-    
-    setUploadingImage(true);
 
     try {
       let imageUrl: string | null = null;
@@ -211,7 +209,6 @@ const AdminCategories: React.FC = () => {
         // Vérifier si le nom a changé et si le nouveau nom existe déjà
         if (existingCategory && existingCategory.id !== editingCategory.id) {
           showError('Une catégorie avec ce nom existe déjà. Veuillez choisir un autre nom.');
-          setUploadingImage(false);
           return;
         }
         
@@ -254,7 +251,6 @@ const AdminCategories: React.FC = () => {
         // Vérifier si le nom existe déjà
         if (existingCategory) {
           showError('Une catégorie avec ce nom existe déjà. Veuillez choisir un autre nom.');
-          setUploadingImage(false);
           return;
         }
         
@@ -294,8 +290,6 @@ const AdminCategories: React.FC = () => {
       } else {
         showError('Erreur lors de la sauvegarde: ' + errorMessage);
       }
-    } finally {
-      setUploadingImage(false);
     }
   };
 

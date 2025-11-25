@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase.ts';
 import { useToast } from '../contexts/ToastContext.tsx';
 import { uploadPremiumProof, verifyPremiumCode, checkPremiumAccess } from '../services/premiumService.ts';
 import { useAuth } from '../contexts/AuthContext.tsx';
-import { useProducts } from '../contexts/ProductContext.tsx';
+// useProducts removed - not used
 import ProductCard from '../components/products/ProductCard.tsx';
 import PremiumOnboarding from '../components/premium/PremiumOnboarding.tsx';
 // formatImageSrc removed - not used
